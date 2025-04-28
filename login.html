@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jessy's Grocery Outlet</title>
+  <link rel="stylesheet" href="design.css">
+</head>
+<body>
+  <header>
+    <h1>Jessy's Grocery Outlet</h1>
+  </header>
+
+  <main>
+    <!-- Registration Form -->
+    <div id="register-form" class="form-container">
+      <h2>Register</h2>
+      <form id="registration-form">
+        <input type="text" id="name" placeholder="Full Name" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <input type="text" id="address" placeholder="Street Address" required>
+        <input type="text" id="city" placeholder="City" required>
+        <input type="text" id="state" placeholder="State" required>
+        <input type="text" id="phone" placeholder="Phone Number" required>
+        <div class="password-toggle">
+          <label for="show-password">Show Password</label>
+          <input type="checkbox" id="show-password">
+        </div>
+        <button type="submit">Register</button>
+      </form>
+    </div>
+
+    <!-- Login Form -->
+    <div id="login-form" class="form-container">
+      <h2>Login</h2>
+      <form id="login-form">
+        <input type="email" id="login-email" placeholder="Email" required>
+        <input type="password" id="login-password" placeholder="Password" required>
+        <div class="password-toggle">
+          <label for="show-login-password">Show Password</label>
+          <input type="checkbox" id="show-login-password">
+        </div>
+        <button type="submit">Login</button>
+      </form>
+    </div>
+
+    <!-- Message Display -->
+    <div class="message" id="message"></div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>

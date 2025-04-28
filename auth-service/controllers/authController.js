@@ -1,117 +1,147 @@
-require('dotenv').config();  // Load environment variables from .env file
-const nodemailer = require("nodemailer");
-const crypto = require("crypto");
-const User = require("../models/userModel");
-let resetTokens = {};  // In-memory store for reset tokens
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcrypt');
+const User = require('../models/userModel'); // Adjust the path to your User model
 
-// Utility function to send password reset email
-class EmailService {
-  constructor() {
-    this.transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,  // Use email from environment variables
-        pass: process.env.EMAIL_PASS   // Use password from environment variables
-      }
-    });
+const secretKey = process.env.JWT_SECRET_KEY || 'your-secret-key'; // Store securely in environment variables
+
+// Registration logic
+const register = async (req, res) => {
+  const { email, password, name } = req.body;
+
+  if (!email || !password || !name) {
+    return res.status(400).json({ error: 'Email, password, and name are required' });
   }
-
-  sendPasswordResetEmail(to, resetLink) {
-    const mailOptions = {
-      from: process.env.EMAIL_USER,  // From email
-      to,
-      subject: "Reset Password",
-      text: `Reset your password: ${resetLink}`
-    };
-
-    return new Promise((resolve, reject) => {
-      this.transporter.sendMail(mailOptions, (err) => {
-        if (err) reject("Failed to send reset email");
-        else resolve("Reset email sent");
-      });
-    });
-  }
-}
-
-// Controller for registration
-exports.register = async (req, res) => {
-  const { name, email, password, address, city, state, phone, budget } = req.body;
 
   try {
-    const user = await User.findByEmail(email);
-    if (user) {
-      return res.status(400).json({ error: "User already exists" });
+    // Check if the user already exists
+    const existingUser = await User.findOne({ email });
+    if (existingUser) {
+      return res.status(400).json({ error: 'Email is already in use' });
     }
 
-    await User.create({ name, email, password, address, city, state, phone, budget });
-    res.status(201).json({ message: "Registration successful" });
+    // Hash the password before saving to the database
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Create a new user
+    const newUser = await User.create({ email, password: hashedPassword, name });
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { email: newUser.email, name: newUser.name },
+      secretKey,
+      { expiresIn: '1h' }
+    );
+
+    // Respond with success message and token
+    res.status(201).json({ message: 'User registered successfully', token });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(`Error during registration: ${err}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Controller for login
-exports.login = async (req, res) => {
+// Login logic
+const login = async (req, res) => {
   const { email, password } = req.body;
 
+  if (!email || !password) {
+    return res.status(400).json({ error: 'Email and password are required' });
+  }
+
   try {
-    const user = await User.findByEmail(email);
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid credentials" });
+    // Find the user in the database
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Invalid credentials' });
     }
-    res.status(200).json({ message: "Login successful" });
+
+    // Compare the entered password with the hashed password in the database
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    // Generate JWT token
+    const token = jwt.sign(
+      { email: user.email, name: user.name },
+      secretKey,
+      { expiresIn: '1h' }
+    );
+
+    // Respond with success message and token
+    res.status(200).json({ message: 'Login successful', token });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(`Error during login: ${err}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Controller for forgotten password
-exports.forgotPassword = async (req, res) => {
+// Forgot Password logic
+const forgotPassword = async (req, res) => {
   const { email } = req.body;
 
+  if (!email) {
+    return res.status(400).json({ error: 'Email is required' });
+  }
+
   try {
-    const user = await User.findByEmail(email);
+    // Find the user by email
+    const user = await User.findOne({ email });
+
     if (!user) {
-      return res.status(404).json({ error: "User not found" });
+      return res.status(404).json({ error: 'User not found' });
     }
 
-    const token = crypto.randomBytes(20).toString("hex");
-    const tokenExpiryTime = Date.now() + 3600000; // 1 hour expiration
-    resetTokens[token] = { email, expiresAt: tokenExpiryTime };
+    // In a real implementation, you would send a password reset link via email.
+    // For now, just return a success message indicating the reset process has started.
+    // You could also implement an email service like Nodemailer to send a link to the user.
 
-    const resetLink = `http://localhost:5000/reset-password.html?token=${token}`;
-    const emailService = new EmailService();
-    await emailService.sendPasswordResetEmail(email, resetLink);
-    res.status(200).json({ message: "Reset email sent" });
+    res.status(200).json({ message: 'Password reset link sent to your email (not implemented yet)' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(`Error during forgot password: ${err}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
 };
 
-// Controller for resetting password
-exports.resetPassword = async (req, res) => {
+// Reset Password logic
+const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
 
-  if (!newPassword) {
-    return res.status(400).json({ error: "New password is required" });
-  }
-
-  const tokenData = resetTokens[token];
-  if (!tokenData) {
-    return res.status(400).json({ error: "Invalid or expired token" });
-  }
-
-  const { email, expiresAt } = tokenData;
-  if (Date.now() > expiresAt) {
-    delete resetTokens[token];  // Clean up expired token
-    return res.status(400).json({ error: "Token has expired" });
+  if (!token || !newPassword) {
+    return res.status(400).json({ error: 'Token and new password are required' });
   }
 
   try {
-    await User.updatePassword(email, newPassword);
-    delete resetTokens[token];  // Clean up used token
-    res.status(200).json({ message: "Password successfully updated!" });
+    // Verify the JWT token
+    const decoded = jwt.verify(token, secretKey);
+
+    // Find the user by email
+    const user = await User.findOne({ email: decoded.email });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Hash the new password before saving
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update the user's password in the database
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password reset successfully' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(`Error during password reset: ${err}`);
+    res.status(500).json({ error: 'Internal server error' });
   }
+};
+
+// Exporting functions
+module.exports = {
+  register,
+  login,
+  forgotPassword,
+  resetPassword
 };

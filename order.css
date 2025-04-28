@@ -5,6 +5,7 @@ body {
     margin: 0;
     padding: 0;
 }
+
 .container {
     width: 80%;
     margin: 30px auto;
@@ -13,10 +14,46 @@ body {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     padding: 20px;
 }
+
 h1 {
     text-align: center;
     color: #4CAF50;
 }
+
+.category-title {
+    margin-top: 20px;
+    font-size: 20px;
+    color: #333;
+    font-weight: bold;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #eee;
+    background-color: #f9f9f9;
+    padding-left: 10px;
+}
+
+.category {
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.category.dairy {
+    background-color: #f0f8ff;
+}
+
+.category.produce {
+    background-color: #e8f7e3;
+}
+
+.category.fruit {
+    background-color: #fffbe6;
+}
+
+.category.pastries {
+    background-color: #fff0f5;
+}
+
 .item {
     display: flex;
     justify-content: space-between;
@@ -25,10 +62,12 @@ h1 {
     border-bottom: 1px solid #ddd;
     padding-bottom: 10px;
 }
+
 .item label {
     font-size: 16px;
     flex: 1;
 }
+
 .item input {
     width: 60px;
     padding: 8px;
@@ -36,10 +75,12 @@ h1 {
     border: 1px solid #ddd;
     border-radius: 4px;
 }
+
 .item span {
     font-size: 14px;
     color: #555;
 }
+
 .total {
     margin-top: 20px;
     text-align: right;
@@ -47,12 +88,14 @@ h1 {
     font-weight: bold;
     color: #4CAF50;
 }
+
 .error {
     color: red;
     text-align: center;
     font-size: 14px;
     margin-bottom: 20px;
 }
+
 #place-order {
     width: 100%;
     padding: 12px;
@@ -64,12 +107,7 @@ h1 {
     cursor: pointer;
     transition: background-color 0.3s;
 }
+
 #place-order:hover {
     background-color: #45a049;
-}
-.category-title {
-    margin-top: 20px;
-    font-size: 20px;
-    color: #333;
-    font-weight: bold;
 }

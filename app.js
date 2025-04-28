@@ -1,80 +1,87 @@
-document.addEventListener('DOMContentLoaded', () => {
-    // Registration Form Submission
-    document.getElementById('registration-form').addEventListener('submit', handleRegister);
-  
-    // Login Form Submission
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
-  
-    // Password Toggle Event Listeners
-    document.getElementById('show-password').addEventListener('change', togglePasswordVisibility);
-    document.getElementById('show-login-password').addEventListener('change', togglePasswordVisibility);
-  });
-  
-  // Handle Registration
-  async function handleRegister(e) {
-    e.preventDefault();
-  
-    const newUser = {
-      name: document.getElementById('name').value,
-      email: document.getElementById('email').value,
-      password: document.getElementById('password').value,
-      address: document.getElementById('address').value,
-      city: document.getElementById('city').value,
-      state: document.getElementById('state').value,
-      phone: document.getElementById('phone').value,
-    };
-  
-    try {
-      const response = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUser)
-      });
-  
-      const result = await response.json();
-      document.getElementById('message').textContent = response.status === 201 ? result.message : result.error;
-      if (response.status === 201) {
-        document.getElementById('register-form').style.display = 'none';
-        document.getElementById('login-form').style.display = 'block';
-      }
-    } catch (error) {
-      document.getElementById('message').textContent = 'Error registering user.';
-    }
+// Handle registration form submission
+document.getElementById('registration-form')?.addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  const name = document.getElementById('name')?.value;
+  const email = document.getElementById('email')?.value;
+  const password = document.getElementById('password')?.value;
+  const address = document.getElementById('address')?.value;
+  const city = document.getElementById('city')?.value;
+  const state = document.getElementById('state')?.value;
+  const phone = document.getElementById('phone')?.value;
+
+  const messageElement = document.getElementById('message');
+  messageElement.textContent = '';
+
+  try {
+    const response = await fetch('http://localhost:5000/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, password, address, city, state, phone }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error || 'Registration failed');
+
+    messageElement.textContent = data.message;
+    messageElement.style.color = 'green';
+
+    setTimeout(() => {
+      // Redirect to the order page after successful registration
+      window.location.href = '/order';  // Ensure this path matches your Express route
+    }, 2000);
+
+  } catch (error) {
+    messageElement.textContent = error.message;
+    messageElement.style.color = 'red';
+    console.error('Error during registration:', error);
   }
-  
-  // Handle Login
-  async function handleLogin(e) {
-    e.preventDefault();
-  
-    const loginData = {
-      email: document.getElementById('login-email').value,
-      password: document.getElementById('login-password').value,
-    };
-  
-    try {
-      const response = await fetch('/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(loginData)
-      });
-  
-      const result = await response.json();
-      document.getElementById('message').textContent = response.status === 200 ? result.message : result.error;
-      if (response.status === 200) {
-        window.location.href = 'order.html'; // Assuming you have order.html
-      }
-    } catch (error) {
-      document.getElementById('message').textContent = 'Error logging in.';
-    }
+});
+
+// Handle login form submission
+document.getElementById('login-form')?.addEventListener('submit', async function(event) {
+  event.preventDefault();
+
+  const loginEmail = document.getElementById('login-email')?.value;
+  const loginPassword = document.getElementById('login-password')?.value;
+
+  const messageElement = document.getElementById('message');
+  messageElement.textContent = '';
+
+  try {
+    const response = await fetch('http://localhost:5000/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: loginEmail, password: loginPassword }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) throw new Error(data.error || 'Login failed');
+
+    messageElement.textContent = data.message;
+    messageElement.style.color = 'green';
+
+    setTimeout(() => {
+      // Redirect to the order page after successful login
+      window.location.href = '/order';  // Ensure this path matches your Express route
+    }, 2000);
+
+  } catch (error) {
+    messageElement.textContent = error.message;
+    messageElement.style.color = 'red';
+    console.error('Error during login:', error);
   }
-  
-  // Toggle Password Visibility
-  function togglePasswordVisibility() {
-    const passwordField = this.closest('form').querySelector('input[type="password"]');
-    if (this.checked) {
-      passwordField.type = 'text';
-    } else {
-      passwordField.type = 'password';
-    }
-  }
-  
+});
+
+// Toggle show/hide password
+document.getElementById('show-password')?.addEventListener('change', function() {
+  const passwordField = document.getElementById('password');
+  if (passwordField) passwordField.type = this.checked ? 'text' : 'password';
+});
+
+document.getElementById('show-login-password')?.addEventListener('change', function() {
+  const passwordField = document.getElementById('login-password');
+  if (passwordField) passwordField.type = this.checked ? 'text' : 'password';
+});

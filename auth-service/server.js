@@ -1,16 +1,20 @@
-require('dotenv').config();  // Load environment variables from .env file
+// server.js
 
 const express = require('express');
-const app = express();
+const cors = require('cors');
 const bodyParser = require('body-parser');
-const authRoutes = require('./routes/authRoutes');  // Ensure correct path
+const authRoutes = require('./routes/AuthRoutes');  // Import AuthRoutes
 
-app.use(bodyParser.json());  // Middleware to parse JSON requests
+const app = express();
+const port = 5000;  // Or whatever port you're using
 
-// Ensure that the prefix '/auth' is applied to all auth-related routes
-app.use('/auth', authRoutes);  // Routes will now be prefixed with '/auth'
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());  // Ensure you have body-parser to handle JSON data
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Auth service running on port ${PORT}`);
+// Use routes
+app.use('/auth', authRoutes);  // Use AuthRoutes for the '/auth' endpoint
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });

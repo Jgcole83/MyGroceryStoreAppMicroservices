@@ -1,15 +1,29 @@
-// /order-service/server.js
-
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const orderRoutes = require('./routes/orderRoutes');  // Import order routes
+const path = require('path');
+const groceryItems = require('./groceryItems');  // <-- Import the grocery items
 
-// Middleware to parse JSON requests
+// Define CORS options
+const corsOptions = {
+  origin: '*',   // Allow all origins for development
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type'],
+};
+
+// Use CORS middleware
+app.use(cors(corsOptions));
+
+// Body parser
 app.use(express.json());
 
-// Use order-specific routes
-app.use('/orders', orderRoutes);
+// Route
+app.get('/orders/api/grocery-items', (req, res) => {
+  res.json(groceryItems);   // <-- Serve the organized list!
+});
 
-app.listen(3002, () => {
-  console.log('Order Service is running on port 3002');
+// Start the server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Order Service is running on port ${PORT}`);
 });

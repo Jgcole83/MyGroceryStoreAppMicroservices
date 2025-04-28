@@ -1,0 +1,28 @@
+{
+  "name": "groceryproject",
+  "version": "1.0.0",
+  "description": "This project is a microservices-based architecture for a **Grocery Store Application**. The app is designed to handle user authentication and order management through separate, loosely-coupled services. This allows for a scalable, maintainable, and flexible architecture.",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "concurrently \"npm run start-auth-service\" \"npm run start-order-service\" \"npm run start-api-gateway\"",
+    "start-auth-service": "cd auth-service && npm install && npm start",
+    "start-order-service": "cd order-service && npm install && npm start",
+    "start-api-gateway": "cd api-gateway && npm install && npm start"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jgcole83/MyGroceryStoreAppMicroservices.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Jgcole83/MyGroceryStoreAppMicroservices/issues"
+  },
+  "homepage": "https://github.com/Jgcole83/MyGroceryStoreAppMicroservices#readme",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

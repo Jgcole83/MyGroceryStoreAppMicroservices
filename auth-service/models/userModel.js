@@ -1,21 +1,27 @@
-let users = [
-    { email: "test@example.com", password: "password123", name: "Test User", budget: 50 }
-  ];
-  
-  class User {
-    static findByEmail(email) {
-      return users.find(user => user.email === email);
-    }
-  
-    static create(userData) {
-      users.push(userData);
-    }
-  
-    static updatePassword(email, newPassword) {
-      const user = this.findByEmail(email);
-      if (user) user.password = newPassword;
-    }
-  }
-  
-  module.exports = User;
-  
+const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+
+// User schema
+const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  name: { type: String, required: true }
+});
+
+// Static method to find user by email
+userSchema.statics.findByEmail = async function (email) {
+  return this.findOne({ email });
+};
+
+// Static method to create a user
+userSchema.statics.createUser = async function (userData) {
+  // Hash the password before saving the user
+  const hashedPassword = await bcrypt.hash(userData.password, 10);
+  const user = new this({ ...userData, password: hashedPassword });
+  await user.save();
+  return user;
+};
+
+const User = mongoose.model('User', userSchema);
+
+module.exports = User;

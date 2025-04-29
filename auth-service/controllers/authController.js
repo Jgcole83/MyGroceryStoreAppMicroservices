@@ -1,6 +1,7 @@
 require('dotenv').config();  // Load environment variables from .env file
 const nodemailer = require("nodemailer");
 const crypto = require("crypto");
+const bcrypt = require('bcrypt');
 const User = require("../models/userModel");
 let resetTokens = {};  // In-memory store for reset tokens
 
@@ -43,7 +44,9 @@ exports.register = async (req, res) => {
       return res.status(400).json({ error: "User already exists" });
     }
 
-    await User.create({ name, email, password, address, city, state, phone, budget });
+    // Hash the password before storing it
+    const hashedPassword = await bcrypt.hash(password, 10);
+    await User.create({ name, email, password: hashedPassword, address, city, state, phone, budget });
     res.status(201).json({ message: "Registration successful" });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -56,7 +59,7 @@ exports.login = async (req, res) => {
 
   try {
     const user = await User.findByEmail(email);
-    if (!user || user.password !== password) {
+    if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
     res.status(200).json({ message: "Login successful" });
@@ -108,7 +111,9 @@ exports.resetPassword = async (req, res) => {
   }
 
   try {
-    await User.updatePassword(email, newPassword);
+    // Hash the new password before storing it
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    await User.updatePassword(email, hashedPassword);
     delete resetTokens[token];  // Clean up used token
     res.status(200).json({ message: "Password successfully updated!" });
   } catch (err) {

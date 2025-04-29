@@ -1,4 +1,5 @@
-const jwt = require('jsonwebtoken');
+import jwt from 'jsonwebtoken';
+
 const User = require('../models/User');  // Adjust the path to your User model
 const secretKey = process.env.JWT_SECRET_KEY || 'your-secret-key';  // Store securely in environment variables
 

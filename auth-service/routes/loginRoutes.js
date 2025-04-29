@@ -1,8 +1,15 @@
-import jwt from 'jsonwebtoken';
+// Ensure the middleware path is correct (relative to your file structure)
+const authenticateJWT = require('../api-gateway/middleware/authenticateJWT');
 
-const User = require('../models/User');  // Adjust the path to your User model
+// Ensure the path to your User model is correct (relative to your file structure)
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const User = require('./models/User');  // Adjust the path to your User model
 const secretKey = process.env.JWT_SECRET_KEY || 'your-secret-key';  // Store securely in environment variables
 
+const router = express.Router();
+
+// POST /login route for handling login and generating JWT token
 router.post("/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -28,3 +35,8 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
+
+// If you want to use the middleware later, attach it like this
+// router.use(authenticateJWT);  // If needed for other routes
+
+module.exports = router;

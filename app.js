@@ -70,11 +70,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Toggle Password Visibility
   function togglePasswordVisibility() {
-    const passwordField = this.closest('form').querySelector('input[type="password"]');
-    if (this.checked) {
-      passwordField.type = 'text';
-    } else {
-      passwordField.type = 'password';
+    const form = this.closest('form');
+    if (form) {
+      const passwordField = form.querySelector('input[type="password"]');
+      if (passwordField) {
+        passwordField.type = this.checked ? 'text' : 'password';
+      }
     }
   }
   

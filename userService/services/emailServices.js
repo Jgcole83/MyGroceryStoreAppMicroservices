@@ -1,6 +1,6 @@
 // /userService/services/emailService.js
 
-const nodemailer = require('nodemailer');
+import nodemailer from 'nodemailer';
 
 class EmailService {
   constructor() {
@@ -31,4 +31,4 @@ class EmailService {
   }
 }
 
-module.exports = new EmailService();
+export default new EmailService();

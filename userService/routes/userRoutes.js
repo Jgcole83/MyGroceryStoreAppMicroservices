@@ -1,6 +1,7 @@
-const express = require("express");
+const express = require('express');
+import userController from "./controllers/userController.js";
+
 const router = express.Router();
-const userController = require("./controllers/userController");
 
 // In-memory storage for users (this can be replaced with a database)
 let users = [
@@ -19,9 +20,9 @@ router.post("/forgot-password", userController.forgotPassword);
 // Reset Password Route (After User Clicks Reset Link)
 router.post("/reset-password", userController.resetPassword);
 
-// Get all users (optional, for testing or admin purposes)
-router.get("/users", (req, res) => {
+router.get("/users", (_, res) => {
   res.json(users);  // Send the in-memory user data for now
 });
+
 
 module.exports = router;

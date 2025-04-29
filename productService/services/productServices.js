@@ -2,15 +2,18 @@
 
 // Placeholder for future database or service integration
 
-module.exports = {
-    getAllProducts: () => {
-      // Return products from the in-memory array or database
-    },
-    getProductById: (id) => {
-      // Fetch a product by ID from the database or in-memory array
-    },
-    createProduct: (product) => {
-      // Logic to create a product in the database or in-memory array
-    }
-  };
+const products = []; // Example in-memory array for products
+
+export const getAllProducts = () => {
+  return products; // Return products from the in-memory array
+};
+
+export const getProductById = (id) => {
+  return products.find(product => product.id === id); // Fetch a product by ID
+};
+
+export const createProduct = (product) => {
+  products.push(product); // Add the product to the in-memory array
+  return product;
+};
   

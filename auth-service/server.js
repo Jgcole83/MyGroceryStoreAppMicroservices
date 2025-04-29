@@ -1,15 +1,14 @@
 import dotenv from 'dotenv';
 dotenv.config();
 import express from 'express';
+import bcrypt from 'bcryptjs';
+import { Pool } from 'pg';
+import jwt from 'jsonwebtoken';  // Importing JWT for token signing/verification
 
-import jwt from 'jsonwebtoken';
-
-const bcrypt = require('bcryptjs');
-const { Pool } = require('pg');
 const app = express();
 
-// Set port using environment variable or default to 3001
-const port = process.env.PORT || 3001; 
+// Set port using environment variable or default to 5000
+const port = process.env.PORT || 5000;
 
 app.use(express.json());
 
@@ -18,7 +17,7 @@ const pool = new Pool({
   connectionString: process.env.DATABASE_URL || 'postgresql://postgres:yourpassword@localhost:5432/grocerydb',
 });
 
-// Register
+// Register (Sign up)
 app.post('/auth/register', async (req, res) => {
   const { username, password, email } = req.body;
 
@@ -37,7 +36,7 @@ app.post('/auth/register', async (req, res) => {
   }
 });
 
-// Login
+// Login (Sign in)
 app.post('/auth/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -55,8 +54,8 @@ app.post('/auth/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET || 'default_secret_key', {
-      expiresIn: '1h',
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY || 'default_secret_key', {
+      expiresIn: '1h',  // Set expiration for 1 hour
     });
 
     res.json({ token });
@@ -66,7 +65,7 @@ app.post('/auth/login', async (req, res) => {
   }
 });
 
-// Forgot password
+// Forgot password (Generate reset token)
 app.post('/auth/forgot-password', async (req, res) => {
   const { email } = req.body;
 
@@ -77,9 +76,9 @@ app.post('/auth/forgot-password', async (req, res) => {
       return res.status(404).json({ error: 'Email not found' });
     }
 
-    // In real life, you would send an email. We'll just mock a reset token.
-    const resetToken = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET || 'default_secret_key', {
-      expiresIn: '15m',
+    // Generate a reset token (in a real scenario, you would send it by email)
+    const resetToken = jwt.sign({ userId: result.rows[0].id }, process.env.JWT_SECRET_KEY || 'default_secret_key', {
+      expiresIn: '15m',  // Set expiration to 15 minutes
     });
 
     res.json({ message: 'Reset token generated', resetToken });
@@ -89,12 +88,12 @@ app.post('/auth/forgot-password', async (req, res) => {
   }
 });
 
-// Reset password
+// Reset password (Update password using reset token)
 app.post('/auth/reset-password', async (req, res) => {
   const { resetToken, newPassword } = req.body;
 
   try {
-    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET || 'default_secret_key');
+    const decoded = jwt.verify(resetToken, process.env.JWT_SECRET_KEY || 'default_secret_key');
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 

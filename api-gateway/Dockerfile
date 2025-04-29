@@ -1,9 +1,7 @@
 FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
-ENV NODE_ENV=production
 RUN npm install
 COPY . .
-ENV PORT=5000
-EXPOSE 5000
+EXPOSE 3000
 CMD ["npm", "start"]

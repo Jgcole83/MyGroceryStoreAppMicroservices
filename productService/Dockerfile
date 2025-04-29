@@ -4,6 +4,5 @@ COPY package*.json ./
 ENV NODE_ENV=production
 RUN npm install
 COPY . .
-ENV PORT=5000
-EXPOSE 5000
+EXPOSE 5003
 CMD ["npm", "start"]

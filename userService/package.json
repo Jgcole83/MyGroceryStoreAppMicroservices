@@ -1,18 +1,14 @@
 {
-  "name": "productservice",
+  "name": "userservice",
   "version": "1.0.0",
   "description": "",
-  "main": "server.js",
+  "main": "userService.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node userService.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
-  "dependencies": {
-    "express": "^5.1.0",
-    "pg": "^8.15.6"
-  }
+  "type": "commonjs"
 }

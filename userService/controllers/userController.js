@@ -1,12 +1,12 @@
 // /userService/controllers/userController.js
 
-const User = require('../models/user');  // Assuming you have a User model defined
-const EmailService = require('../services/emailService');
-const crypto = require('crypto');
+import User from '../models/user';  // Assuming you have a User model defined
+import EmailService from '../services/emailService';
+import crypto from 'crypto';
 const resetTokens = {};  // Store tokens temporarily
 
 // Register User Route Handler
-exports.register = (req, res) => {
+export const register = (req, res) => {
   const { name, email, password, address, city, state, phone, budget } = req.body;
 
   // Check if user already exists
@@ -22,7 +22,7 @@ exports.register = (req, res) => {
 };
 
 // Login User Route Handler
-exports.login = (req, res) => {
+export const login = (req, res) => {
   const { email, password } = req.body;
   const user = User.findByEmail(email);
 
@@ -34,7 +34,7 @@ exports.login = (req, res) => {
 };
 
 // Forgot Password Route Handler (Send Reset Email)
-exports.forgotPassword = async (req, res) => {
+export const forgotPassword = async (req, res) => {
   const { email } = req.body;
   const user = User.findByEmail(email);
 
@@ -60,7 +60,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 // Reset Password Route Handler (After User Clicks Reset Link)
-exports.resetPassword = (req, res) => {
+export const resetPassword = (req, res) => {
   const { token, newPassword } = req.body;
 
   const email = resetTokens[token];
@@ -78,6 +78,6 @@ exports.resetPassword = (req, res) => {
 };
 
 // Get All Users (Optional, for testing or admin purposes)
-exports.getUsers = (req, res) => {
+export const getUsers = (res) => {
   res.json(User.getAllUsers());  // Assuming you have a method to fetch all users
 };

@@ -34,6 +34,9 @@
     async function fetchGroceryItems() {
         try {
             const response = await fetch('http://localhost:5000/api/grocery-items');
+            if (!response.ok) {
+                throw new Error('Failed to fetch grocery items');
+            }
             const items = await response.json();
             renderItems(items);
         } catch (error) {
@@ -66,7 +69,8 @@
         });
     }
 
-    // Update the total for an individual item and the overall total
+        const validQuantity = isNaN(quantity) || quantity < 0 ? 0 : quantity;
+        const totalPrice = price * validQuantity;
     function updateItemTotal(itemName, price, quantity) {
         const itemTotalDisplay = document.querySelector(`#${itemName}`).parentNode.querySelector('.item-total');
         const totalPrice = price * quantity;
@@ -76,7 +80,7 @@
 
     // Calculate the overall total based on the selected quantities
     function updateOverallTotal() {
-        let overallTotal = 0;
+            const quantity = isNaN(parseInt(input.value)) || parseInt(input.value) < 0 ? 0 : parseInt(input.value);
         const quantityInputs = document.querySelectorAll('input[type="number"]');
         quantityInputs.forEach(input => {
             const price = parseFloat(input.dataset.price);

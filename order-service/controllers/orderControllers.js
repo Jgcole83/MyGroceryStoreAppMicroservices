@@ -1,31 +1,44 @@
-const express = require("express");
-const router = express.Router();
-const { calculateTotal, isOrderAffordable } = require("../utils/orderUtility");
+import { calculateTotal, isOrderAffordable } from "../utils/orderUtility.js";
 
 // In-memory storage for orders (can be replaced with a database)
 let orders = [];
 
-// Place an Order (Check Total Cost Against Budget)
-router.post("/orders", (req, res) => {
-  const { userId, shoppingList, budget } = req.body;
+// Controller: Place Order
+export function placeOrder(req, res) {
+  try {
+    const { userId, shoppingList, budget } = req.body;
 
-  // Calculate the total cost of the order using the utility function
-  const total = calculateTotal(shoppingList);
+    if (!Array.isArray(shoppingList) || shoppingList.length === 0) {
+      return res.status(400).json({ error: "Shopping list is required and must be an array." });
+    }
 
-  // Check if the total cost exceeds the user's budget
-  if (!isOrderAffordable(total, budget)) {
-    return res.status(400).json({ error: "You do not have enough funds for this order" });
+    for (const item of shoppingList) {
+      if (!item.name || !item.price || !item.quantity) {
+        return res.status(400).json({ error: "Each item must have a name, price, and quantity." });
+      }
+    }
+
+    const total = calculateTotal(shoppingList);
+
+    if (!isOrderAffordable(total, budget)) {
+      return res.status(400).json({ error: "You do not have enough funds for this order" });
+    }
+
+    const order = { userId, shoppingList, total };
+    orders.push(order);
+
+    return res.status(200).json({ message: "Order placed successfully", order });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: "An unexpected error occurred." });
   }
+}
 
-  // Create the order
-  const order = {
-    userId,
-    shoppingList,
-    total
-  };
-
-  orders.push(order);
-  res.status(200).json({ message: "Order placed successfully", order });
-});
-
-module.exports = router;
+// Stub for grocery items (you can update this as needed)
+export function getGroceryItems(req, res) {
+  res.status(200).json([
+    { name: "Apple", price: 1.2 },
+    { name: "Bread", price: 2.5 },
+    { name: "Milk", price: 3.0 }
+  ]);
+}

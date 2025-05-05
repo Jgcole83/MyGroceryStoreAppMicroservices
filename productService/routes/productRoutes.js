@@ -1,70 +1,90 @@
 const express = require("express");
-
 const router = express.Router();
+const Product = require('../models/Product');
 
-// Mock product data (replace with database queries)
-let products = [
-  { id: 1, name: 'Product 1', price: 10.99 },
-  { id: 2, name: 'Product 2', price: 12.99 },
-];
+// Get all products grouped by category
+router.get('/grocery-items', async (req, res) => {
+    try {
+        const products = await Product.find();
+        const groupedProducts = products.reduce((acc, product) => {
+            if (!acc[product.category]) {
+                acc[product.category] = [];
+            }
+            acc[product.category].push({
+                id: product._id,
+                item: product.name,
+                price: product.price
+            });
+            return acc;
+        }, {});
+        res.status(200).json(groupedProducts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Get all products
-router.get('/products', (_, res) => {
-  res.status(200).json(products);
+router.get('/products', async (req, res) => {
+    try {
+        const products = await Product.find();
+        res.status(200).json(products);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Get a specific product by ID
-router.get('/products/:id', (req, res) => {
-  const productId = parseInt(req.params.id, 10);
-  const product = products.find(p => p.id === productId);
-
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  res.status(200).json(product);
+router.get('/products/:id', async (req, res) => {
+    try {
+        const product = await Product.findById(req.params.id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 // Add a new product
-router.post('/products', (req, res) => {
-  const { name, price } = req.body;
-  const newProduct = {
-    id: products.length + 1,
-    name,
-    price,
-  };
-
-  products.push(newProduct);
-  res.status(201).json({ message: 'Product added', product: newProduct });
+router.post('/products', async (req, res) => {
+    try {
+        const product = new Product(req.body);
+        await product.save();
+        res.status(201).json(product);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 });
 
 // Update an existing product
-router.put('/products/:id', (req, res) => {
-  const productId = parseInt(req.params.id);
-  const product = products.find(p => p.id === productId);
-
-  if (!product) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  const { name, price } = req.body;
-  product.name = name || product.name;
-  product.price = price || product.price;
-
-  res.status(200).json({ message: 'Product updated', product });
+router.put('/products/:id', async (req, res) => {
+    try {
+        const product = await Product.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.status(200).json(product);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 });
 
 // Delete a product
-router.delete('/products/:id', (req, res) => {
-  const productId = parseInt(req.params.id);
-  const productIndex = products.findIndex(p => p.id === productId);
-
-  if (productIndex === -1) {
-    return res.status(404).json({ error: 'Product not found' });
-  }
-
-  products.splice(productIndex, 1);
-  res.status(200).json({ message: 'Product deleted' });
+router.delete('/products/:id', async (req, res) => {
+    try {
+        const product = await Product.findByIdAndDelete(req.params.id);
+        if (!product) {
+            return res.status(404).json({ error: 'Product not found' });
+        }
+        res.status(200).json({ message: 'Product deleted' });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
 });
 
 module.exports = router;

@@ -3,141 +3,464 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grocery Store Order</title>
-    <link rel="stylesheet" href="order.css"> <!-- Link to the external CSS file -->
+    <title>Jessy's Grocery Outlet - Order</title>
+    <link rel="stylesheet" href="order.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-
-<div class="container">
-    <h1>Order Your Groceries</h1>
-    
-    <div id="error-message" class="error"></div>
-    
-    <div id="grocery-items">
-        <!-- Dynamic items will be loaded here -->
+    <div class="background-container">
+        <div class="overlay"></div>
     </div>
-    
-    <button id="place-order">Place Order</button>
-    
-    <div id="total" class="total">
-        Total: $0.00
-    </div>
-</div>
 
-<script>
-    const groceryItemsContainer = document.getElementById('grocery-items');
-    const errorMessage = document.getElementById('error-message');
-    const totalDisplay = document.getElementById('total');
-    const placeOrderButton = document.getElementById('place-order');
-    
-    // Fetch grocery items from the backend
-    async function fetchGroceryItems() {
-        try {
-            const response = await fetch('http://localhost:5000/api/grocery-items');
-            if (!response.ok) {
-                throw new Error('Failed to fetch grocery items');
-            }
-            const items = await response.json();
-            renderItems(items);
-        } catch (error) {
-            errorMessage.textContent = 'Error fetching grocery items. Please try again later.';
+    <div class="main-container">
+        <header>
+            <div class="logo-container">
+                <h1>Jessy's Grocery Outlet</h1>
+                <p class="tagline">Fresh Groceries, Delivered to Your Doorstep</p>
+            </div>
+            <div class="header-actions">
+                <div class="cart-container">
+                    <button id="cart-toggle" class="cart-button">
+                        <i class="fas fa-shopping-cart"></i>
+                        <span id="cart-count">0</span>
+                    </button>
+                    <div id="cart-dropdown" class="cart-dropdown">
+                        <div class="cart-header">
+                            <h3>Your Cart</h3>
+                            <button class="close-cart"><i class="fas fa-times"></i></button>
+                        </div>
+                        <div id="cart-items" class="cart-items"></div>
+                        <div class="cart-footer">
+                            <div class="cart-total">
+                                <span>Total:</span>
+                                <span id="cart-total-amount">$0.00</span>
+                            </div>
+                            <button id="checkout" class="checkout-button">
+                                <i class="fas fa-lock"></i>
+                                Secure Checkout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <button id="logout" class="logout-button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </header>
+
+        <main>
+            <div id="error-message" class="error"></div>
+            <div class="categories-container">
+                <div id="grocery-items" class="grocery-items"></div>
+            </div>
+        </main>
+
+        <footer>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>About Us</h4>
+                    <p>Your trusted source for fresh, quality groceries at competitive prices.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <p>Email: info@jessysgrocery.com</p>
+                    <p>Phone: (555) 123-4567</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Follow Us</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Jessy's Grocery Outlet. All rights reserved.</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // Check authentication first
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/login.html';
         }
-    }
 
-    // Render the grocery items into the HTML
-    function renderItems(items) {
-        const categories = Object.keys(items);
-        categories.forEach(category => {
-            const categoryContainer = document.createElement('div');
-            categoryContainer.innerHTML = `<div class="category-title">${category.charAt(0).toUpperCase() + category.slice(1)}</div>`;
-            groceryItemsContainer.appendChild(categoryContainer);
+        // Cart implementation using doubly linked list
+        class CartItem {
+            constructor(item, quantity, price) {
+                this.item = item;
+                this.quantity = quantity;
+                this.price = price;
+                this.next = null;
+                this.prev = null;
+            }
+        }
 
-            items[category].forEach(item => {
-                const itemContainer = document.createElement('div');
-                itemContainer.classList.add('item');
-                itemContainer.innerHTML = `
-                    <label for="${item.item}">${item.item} ($${item.price.toFixed(2)})</label>
-                    <input type="number" id="${item.item}" min="0" value="0" data-price="${item.price}">
-                    <span class="item-total">Total: $0.00</span>
+        class ShoppingCart {
+            constructor() {
+                this.head = null;
+                this.tail = null;
+                this.size = 0;
+                this.total = 0;
+            }
+
+            addItem(item, quantity, price) {
+                const newItem = new CartItem(item, quantity, price);
+                if (!this.head) {
+                    this.head = newItem;
+                    this.tail = newItem;
+                } else {
+                    this.tail.next = newItem;
+                    newItem.prev = this.tail;
+                    this.tail = newItem;
+                }
+                this.size++;
+                this.total += quantity * price;
+                return newItem;
+            }
+
+            removeItem(item) {
+                let current = this.head;
+                while (current) {
+                    if (current.item === item) {
+                        if (current.prev) {
+                            current.prev.next = current.next;
+                        } else {
+                            this.head = current.next;
+                        }
+                        if (current.next) {
+                            current.next.prev = current.prev;
+                        } else {
+                            this.tail = current.prev;
+                        }
+                        this.size--;
+                        this.total -= current.quantity * current.price;
+                        return true;
+                    }
+                    current = current.next;
+                }
+                return false;
+            }
+
+            updateQuantity(item, newQuantity) {
+                let current = this.head;
+                while (current) {
+                    if (current.item === item) {
+                        this.total -= current.quantity * current.price;
+                        current.quantity = newQuantity;
+                        this.total += newQuantity * current.price;
+                        return true;
+                    }
+                    current = current.next;
+                }
+                return false;
+            }
+
+            clear() {
+                this.head = null;
+                this.tail = null;
+                this.size = 0;
+                this.total = 0;
+            }
+
+            getItems() {
+                const items = [];
+                let current = this.head;
+                while (current) {
+                    items.push({
+                        item: current.item,
+                        quantity: current.quantity,
+                        price: current.price
+                    });
+                    current = current.next;
+                }
+                return items;
+            }
+        }
+
+        const groceryItemsContainer = document.getElementById('grocery-items');
+        const errorMessage = document.getElementById('error-message');
+        const logoutButton = document.getElementById('logout');
+        const cartToggle = document.getElementById('cart-toggle');
+        const cartDropdown = document.getElementById('cart-dropdown');
+        const cartItems = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        const cartTotalAmount = document.getElementById('cart-total-amount');
+        const checkoutButton = document.getElementById('checkout');
+        const closeCartButton = document.querySelector('.close-cart');
+
+        const cart = new ShoppingCart();
+
+        // Toggle cart dropdown
+        cartToggle.addEventListener('click', () => {
+            cartDropdown.style.display = cartDropdown.style.display === 'block' ? 'none' : 'block';
+            updateCartDisplay();
+        });
+
+        // Close cart button
+        closeCartButton.addEventListener('click', () => {
+            cartDropdown.style.display = 'none';
+        });
+
+        // Close cart when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!cartToggle.contains(e.target) && !cartDropdown.contains(e.target)) {
+                cartDropdown.style.display = 'none';
+            }
+        });
+
+        // Handle logout
+        logoutButton.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = '/login.html';
+        });
+
+        // Update cart display
+        function updateCartDisplay() {
+            cartItems.innerHTML = '';
+            cartCount.textContent = cart.size;
+            cartTotalAmount.textContent = cart.total.toFixed(2);
+
+            const items = cart.getItems();
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = 'cart-item';
+                itemElement.innerHTML = `
+                    <div class="cart-item-info">
+                        <span class="item-name">${item.item}</span>
+                        <span class="item-quantity">${item.quantity} × $${item.price.toFixed(2)}</span>
+                    </div>
+                    <div class="cart-item-actions">
+                        <span class="item-total">$${(item.quantity * item.price).toFixed(2)}</span>
+                        <button class="remove-item" data-item="${item.item}">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
                 `;
-                categoryContainer.appendChild(itemContainer);
-
-                // Add event listener to update total when quantity changes
-                const quantityInput = itemContainer.querySelector('input');
-                quantityInput.addEventListener('input', () => updateItemTotal(item.item, item.price, quantityInput.value));
+                cartItems.appendChild(itemElement);
             });
-        });
-    }
 
-        const validQuantity = isNaN(quantity) || quantity < 0 ? 0 : quantity;
-        const totalPrice = price * validQuantity;
-    function updateItemTotal(itemName, price, quantity) {
-        const itemTotalDisplay = document.querySelector(`#${itemName}`).parentNode.querySelector('.item-total');
-        const totalPrice = price * quantity;
-        itemTotalDisplay.textContent = `Total: $${totalPrice.toFixed(2)}`;
-        updateOverallTotal();
-    }
+            // Add event listeners to remove buttons
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const item = e.target.closest('.remove-item').dataset.item;
+                    cart.removeItem(item);
+                    updateCartDisplay();
+                    updateItemQuantity(item, 0);
+                });
+            });
+        }
 
-    // Calculate the overall total based on the selected quantities
-    function updateOverallTotal() {
-            const quantity = isNaN(parseInt(input.value)) || parseInt(input.value) < 0 ? 0 : parseInt(input.value);
-        const quantityInputs = document.querySelectorAll('input[type="number"]');
-        quantityInputs.forEach(input => {
-            const price = parseFloat(input.dataset.price);
-            const quantity = parseInt(input.value);
-            overallTotal += price * quantity;
-        });
-        totalDisplay.textContent = `Total: $${overallTotal.toFixed(2)}`;
-    }
+        // Update item quantity in the main list
+        function updateItemQuantity(itemName, quantity) {
+            const input = document.getElementById(itemName);
+            if (input) {
+                input.value = quantity;
+                updateItemTotal(itemName, parseFloat(input.dataset.price), quantity);
+            }
+        }
 
-    // Handle the order submission
-    placeOrderButton.addEventListener('click', async () => {
-        const shoppingList = [];
-        const quantityInputs = document.querySelectorAll('input[type="number"]');
-        quantityInputs.forEach(input => {
-            const itemName = input.id;
-            const quantity = parseInt(input.value);
-            if (quantity > 0) {
-                shoppingList.push({ item: itemName, quantity, price: parseFloat(input.dataset.price) });
+        // Fetch grocery items from the backend
+        async function fetchGroceryItems() {
+            try {
+                const response = await fetch('http://localhost:5003/api/grocery-items', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 401) {
+                    // Token expired or invalid
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                if (!response.ok) {
+                    throw new Error('Failed to fetch grocery items');
+                }
+
+                const items = await response.json();
+                if (items && Object.keys(items).length > 0) {
+                    renderItems(items);
+                } else {
+                    errorMessage.textContent = 'No items available at the moment.';
+                }
+            } catch (error) {
+                console.error('Error fetching items:', error);
+                errorMessage.textContent = 'Error fetching grocery items. Please try again later.';
+            }
+        }
+
+        // Render the grocery items into the HTML
+        function renderItems(items) {
+            groceryItemsContainer.innerHTML = '';
+            const categories = Object.keys(items);
+            
+            if (categories.length === 0) {
+                errorMessage.textContent = 'No items available at the moment.';
+                return;
+            }
+
+            categories.forEach(category => {
+                const categoryContainer = document.createElement('div');
+                categoryContainer.className = 'category';
+                categoryContainer.innerHTML = `
+                    <div class="category-title">
+                        <i class="fas fa-${getCategoryIcon(category)}"></i>
+                        ${category.charAt(0).toUpperCase() + category.slice(1)}
+                    </div>
+                    <div class="category-items"></div>
+                `;
+                groceryItemsContainer.appendChild(categoryContainer);
+
+                const categoryItemsContainer = categoryContainer.querySelector('.category-items');
+                items[category].forEach(item => {
+                    const itemContainer = document.createElement('div');
+                    itemContainer.className = 'item';
+                    itemContainer.innerHTML = `
+                        <div class="item-info">
+                            <h3>${item.item}</h3>
+                            <p class="item-price">$${item.price.toFixed(2)}</p>
+                            <p class="item-description">${item.description || 'Fresh and delicious'}</p>
+                        </div>
+                        <div class="item-actions">
+                            <div class="quantity-control">
+                                <button class="quantity-btn minus" data-item="${item.item}">-</button>
+                                <input type="number" id="${item.item}" min="0" value="0" data-price="${item.price}">
+                                <button class="quantity-btn plus" data-item="${item.item}">+</button>
+                            </div>
+                            <button class="add-to-cart" data-item="${item.item}" data-price="${item.price}">
+                                <i class="fas fa-cart-plus"></i>
+                                Add to Cart
+                            </button>
+                        </div>
+                    `;
+                    categoryItemsContainer.appendChild(itemContainer);
+
+                    // Add event listeners for quantity controls
+                    const quantityInput = itemContainer.querySelector('input');
+                    const minusBtn = itemContainer.querySelector('.minus');
+                    const plusBtn = itemContainer.querySelector('.plus');
+
+                    minusBtn.addEventListener('click', () => {
+                        const currentValue = parseInt(quantityInput.value);
+                        if (currentValue > 0) {
+                            quantityInput.value = currentValue - 1;
+                            updateItemTotal(item.item, item.price, currentValue - 1);
+                        }
+                    });
+
+                    plusBtn.addEventListener('click', () => {
+                        const currentValue = parseInt(quantityInput.value);
+                        quantityInput.value = currentValue + 1;
+                        updateItemTotal(item.item, item.price, currentValue + 1);
+                    });
+
+                    // Add event listener to update total when quantity changes
+                    quantityInput.addEventListener('input', () => {
+                        const quantity = parseInt(quantityInput.value);
+                        updateItemTotal(item.item, item.price, quantity);
+                    });
+
+                    // Add to cart button
+                    const addToCartButton = itemContainer.querySelector('.add-to-cart');
+                    addToCartButton.addEventListener('click', () => {
+                        const quantity = parseInt(quantityInput.value);
+                        if (quantity > 0) {
+                            cart.addItem(item.item, quantity, item.price);
+                            updateCartDisplay();
+                        }
+                    });
+                });
+            });
+        }
+
+        // Get appropriate icon for category
+        function getCategoryIcon(category) {
+            const icons = {
+                fruits: 'apple-alt',
+                vegetables: 'carrot',
+                dairy: 'cheese',
+                meat: 'drumstick-bite',
+                bakery: 'bread-slice',
+                beverages: 'wine-bottle',
+                snacks: 'cookie',
+                household: 'broom'
+            };
+            return icons[category] || 'shopping-bag';
+        }
+
+        // Update the total for an individual item
+        function updateItemTotal(itemName, price, quantity) {
+            const validQuantity = isNaN(quantity) || quantity < 0 ? 0 : quantity;
+            const itemContainer = document.querySelector(`#${itemName}`).closest('.item');
+            const itemTotalDisplay = itemContainer.querySelector('.item-total');
+            if (itemTotalDisplay) {
+                const totalPrice = price * validQuantity;
+                itemTotalDisplay.textContent = `$${totalPrice.toFixed(2)}`;
+            }
+        }
+
+        // Handle checkout
+        checkoutButton.addEventListener('click', async () => {
+            const items = cart.getItems();
+            if (items.length === 0) {
+                errorMessage.textContent = 'Your cart is empty. Please add some items.';
+                return;
+            }
+
+            try {
+                const response = await fetch('http://localhost:5500/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                        items: items,
+                        total: cart.total
+                    })
+                });
+
+                if (response.status === 401) {
+                    // Token expired or invalid
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('userId');
+                    window.location.href = '/login.html';
+                    return;
+                }
+
+                const result = await response.json();
+                if (response.ok) {
+                    alert('Order placed successfully!');
+                    cart.clear();
+                    updateCartDisplay();
+                    // Reset all quantities
+                    document.querySelectorAll('input[type="number"]').forEach(input => {
+                        input.value = 0;
+                        updateItemTotal(input.id, parseFloat(input.dataset.price), 0);
+                    });
+                } else {
+                    errorMessage.textContent = result.error || 'Error placing order.';
+                }
+            } catch (error) {
+                console.error('Error placing order:', error);
+                errorMessage.textContent = 'Error placing the order. Please try again later.';
             }
         });
 
-        const userId = 1; // Replace with actual user ID, which can be set in a session or from login context
-        const budget = 50; // Example budget, you can adjust based on user preferences or login
-
-        if (shoppingList.length === 0) {
-            errorMessage.textContent = 'Please select at least one item.';
-            return;
-        }
-
-        const orderData = {
-            userId,
-            shoppingList,
-            budget
-        };
-
-        try {
-            const response = await fetch('http://localhost:5000/orders', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(orderData)
-            });
-            const result = await response.json();
-            if (response.ok) {
-                alert(result.message);
-            } else {
-                errorMessage.textContent = result.error;
-            }
-        } catch (error) {
-            errorMessage.textContent = 'Error placing the order. Please try again later.';
-        }
-    });
-
-    // Initial fetch to load the items
-    fetchGroceryItems();
-</script>
-
+        // Initial fetch to load the items
+        fetchGroceryItems();
+    </script>
 </body>
 </html>

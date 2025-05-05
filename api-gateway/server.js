@@ -4,12 +4,31 @@ import path from 'path';  // For handling file paths
 import { createProxyMiddleware } from 'http-proxy-middleware';  // Proxy middleware
 import authenticateJWT from './middleware/authenticateJWT.js';  // Authentication middleware
 import { fileURLToPath } from 'url';  // For handling __dirname in ES Modules
+import cors from 'cors';  // Import the CORS package
 
 // Initialize environment variables
 dotenv.config();
 
 // Initialize express
 const app = express();
+
+// Enable CORS for specific origin (your frontend)
+const allowedOrigins = ['http://localhost:5500', 'http://127.0.0.1:5500'];  // Frontend URL
+
+// Use CORS middleware
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow requests with no origin (e.g., mobile apps, curl requests)
+    if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
 
 // Get the __dirname value in ES modules context
 const __filename = fileURLToPath(import.meta.url);
@@ -76,18 +95,24 @@ app.use('/orders', authenticateJWT, createProxyMiddleware({
   },
 }));
 
-// Proxy for /products service (No authentication required here)
-app.use('/products', createProxyMiddleware({
+// Proxy for /api/grocery-items (Products service)
+app.use('/api/grocery-items', createProxyMiddleware({
   target: process.env.PRODUCTS_SERVER_URL || 'http://localhost:5003',  // Product service
   changeOrigin: true,
   pathRewrite: {
-    '^/products': '',  // Remove '/products' from the request
+    // No need to rewrite path, just ensure correct API routing
   },
 }));
 
 // Health check route
 app.get('/health', (req, res) => {
   res.status(200).json({ message: 'API Gateway is running' });
+});
+
+// Add logging middleware to debug incoming requests
+app.use((req, res, next) => {
+  console.log(`Request Method: ${req.method}, Request URL: ${req.url}`);
+  next();
 });
 
 // Start the server on the specified port

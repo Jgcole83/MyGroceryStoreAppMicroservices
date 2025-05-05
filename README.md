@@ -150,6 +150,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-Your Name - [@yourtwitter](https://twitter.com/yourtwitter) - email@example.com
+Jessy Cole - jgcole83@gmail.com
 
-Project Link: [https://github.com/yourusername/Jessy-s-Grocery-Outlet](https://github.com/yourusername/Jessy-s-Grocery-Outlet)
+Project Link: [https://github.com/jgcole83/Jessy-s-Grocery-Outlet](https://github.com/jgcole83/Jessy-s-Grocery-Outlet)

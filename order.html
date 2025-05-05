@@ -52,6 +52,44 @@
 
         <main>
             <div id="error-message" class="error"></div>
+            
+            <!-- Search and Filter Section -->
+            <div class="search-filter-container">
+                <div class="search-box">
+                    <input type="text" id="search-input" placeholder="Search products...">
+                    <button id="search-button">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div class="filter-options">
+                    <div class="filter-group">
+                        <label for="category-filter">Category:</label>
+                        <select id="category-filter">
+                            <option value="all">All Categories</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="price-filter">Price Range:</label>
+                        <select id="price-filter">
+                            <option value="all">All Prices</option>
+                            <option value="0-10">$0 - $10</option>
+                            <option value="10-20">$10 - $20</option>
+                            <option value="20-50">$20 - $50</option>
+                            <option value="50+">$50+</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label for="sort-by">Sort By:</label>
+                        <select id="sort-by">
+                            <option value="name-asc">Name (A-Z)</option>
+                            <option value="name-desc">Name (Z-A)</option>
+                            <option value="price-asc">Price (Low to High)</option>
+                            <option value="price-desc">Price (High to Low)</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
             <div class="categories-container">
                 <div id="grocery-items" class="grocery-items"></div>
             </div>
@@ -277,7 +315,6 @@
                 });
                 
                 if (response.status === 401) {
-                    // Token expired or invalid
                     localStorage.removeItem('token');
                     localStorage.removeItem('userId');
                     window.location.href = '/login.html';
@@ -288,9 +325,11 @@
                     throw new Error('Failed to fetch grocery items');
                 }
 
-                const items = await response.json();
-                if (items && Object.keys(items).length > 0) {
-                    renderItems(items);
+                allItems = await response.json();
+                populateCategoryFilter(allItems);
+                
+                if (allItems && Object.keys(allItems).length > 0) {
+                    renderItems(allItems);
                 } else {
                     errorMessage.textContent = 'No items available at the moment.';
                 }
@@ -458,6 +497,81 @@
                 errorMessage.textContent = 'Error placing the order. Please try again later.';
             }
         });
+
+        // Populate category filter options
+        function populateCategoryFilter(items) {
+            const categories = Object.keys(items);
+            categoryFilter.innerHTML = '<option value="all">All Categories</option>';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category.charAt(0).toUpperCase() + category.slice(1);
+                categoryFilter.appendChild(option);
+            });
+        }
+
+        // Filter items based on search and filters
+        function filterItems(items) {
+            const searchTerm = searchInput.value.toLowerCase();
+            const selectedCategory = categoryFilter.value;
+            const selectedPriceRange = priceFilter.value;
+            const sortOption = sortBy.value;
+
+            let filteredItems = {};
+
+            // Filter by category and search term
+            Object.keys(items).forEach(category => {
+                if (selectedCategory === 'all' || category === selectedCategory) {
+                    filteredItems[category] = items[category].filter(item => {
+                        const matchesSearch = item.item.toLowerCase().includes(searchTerm) ||
+                                            (item.description && item.description.toLowerCase().includes(searchTerm));
+                        const matchesPrice = selectedPriceRange === 'all' || 
+                                           (selectedPriceRange === '0-10' && item.price <= 10) ||
+                                           (selectedPriceRange === '10-20' && item.price > 10 && item.price <= 20) ||
+                                           (selectedPriceRange === '20-50' && item.price > 20 && item.price <= 50) ||
+                                           (selectedPriceRange === '50+' && item.price > 50);
+                        return matchesSearch && matchesPrice;
+                    });
+                }
+            });
+
+            // Sort items
+            Object.keys(filteredItems).forEach(category => {
+                filteredItems[category].sort((a, b) => {
+                    switch (sortOption) {
+                        case 'name-asc':
+                            return a.item.localeCompare(b.item);
+                        case 'name-desc':
+                            return b.item.localeCompare(a.item);
+                        case 'price-asc':
+                            return a.price - b.price;
+                        case 'price-desc':
+                            return b.price - a.price;
+                        default:
+                            return 0;
+                    }
+                });
+            });
+
+            return filteredItems;
+        }
+
+        // Update the display with filtered items
+        function updateDisplay() {
+            const filteredItems = filterItems(allItems);
+            renderItems(filteredItems);
+        }
+
+        // Event listeners for search and filters
+        searchButton.addEventListener('click', updateDisplay);
+        searchInput.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                updateDisplay();
+            }
+        });
+        categoryFilter.addEventListener('change', updateDisplay);
+        priceFilter.addEventListener('change', updateDisplay);
+        sortBy.addEventListener('change', updateDisplay);
 
         // Initial fetch to load the items
         fetchGroceryItems();

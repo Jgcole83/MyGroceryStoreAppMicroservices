@@ -14,8 +14,12 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-// Serve static files from the public directory
-app.use(express.static(join(__dirname, 'public')));
+// Serve static files from the public directory if it exists
+try {
+  app.use(express.static(join(__dirname, 'public')));
+} catch (error) {
+  console.log('Static files not found, continuing without them');
+}
 
 // Proxy configuration for product service
 const productServiceProxy = createProxyMiddleware({
@@ -29,14 +33,21 @@ const productServiceProxy = createProxyMiddleware({
 // Routes
 app.use('/api/grocery-items', productServiceProxy);
 
+// Health check endpoint
 app.get('/', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'login.html'));
+  res.json({ status: 'API Gateway is running' });
 });
 
+// Order endpoint - will serve order.html if it exists
 app.get('/order', (req, res) => {
-  res.sendFile(join(__dirname, 'public', 'order.html'));
+  try {
+    res.sendFile(join(__dirname, 'public', 'order.html'));
+  } catch (error) {
+    res.json({ status: 'Order endpoint available, but order.html not found' });
+  }
 });
 
+// Start server
 app.listen(port, () => {
-  console.log(`API Gateway running on port ${port}`);
+  console.log(`API Gateway running on http://localhost:${port}`);
 });

@@ -4,9 +4,9 @@
   "type": "module",
   "description": "Grocery Store Microservices",
   "scripts": {
+    "start": "concurrently \"npm run start:product\" \"npm run start:gateway\"",
     "start:product": "cd productService && npm start",
-    "start:gateway": "cd api-gateway && npm start",
-    "start": "concurrently \"npm run start:product\" \"npm run start:gateway\""
+    "start:gateway": "cd api-gateway && npm start"
   },
   "dependencies": {
     "concurrently": "^8.2.2"

@@ -2,8 +2,12 @@ services:
   - type: web
     name: grocery-api-gateway
     env: node
-    buildCommand: npm install
-    startCommand: npm start
+    nodeVersion: 18.17.0
+    buildCommand: |
+      cd api-gateway
+      npm install
+    startCommand: cd api-gateway && npm start
+    healthCheckPath: /
     envVars:
       - key: NODE_ENV
         value: production
@@ -13,8 +17,12 @@ services:
   - type: web
     name: grocery-product-service
     env: node
-    buildCommand: npm install
-    startCommand: npm start
+    nodeVersion: 18.17.0
+    buildCommand: |
+      cd productService
+      npm install
+    startCommand: cd productService && npm start
+    healthCheckPath: /health
     envVars:
       - key: NODE_ENV
         value: production 

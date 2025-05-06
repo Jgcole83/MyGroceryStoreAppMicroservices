@@ -4,7 +4,10 @@ services:
     env: node
     nodeVersion: 18.17.0
     rootDir: api-gateway
-    buildCommand: cd api-gateway && npm install
+    buildCommand: |
+      cd api-gateway
+      npm install --engine-strict
+      npm install express cors http-proxy-middleware
     startCommand: cd api-gateway && node server.js
     healthCheckPath: /
     envVars:
@@ -20,7 +23,10 @@ services:
     env: node
     nodeVersion: 18.17.0
     rootDir: productService
-    buildCommand: cd productService && npm install
+    buildCommand: |
+      cd productService
+      npm install --engine-strict
+      npm install express cors morgan
     startCommand: cd productService && node server.js
     healthCheckPath: /health
     envVars:

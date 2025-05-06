@@ -44,6 +44,22 @@ document.addEventListener('DOMContentLoaded', () => {
   const registerForm = document.getElementById('register-form');
   const forgotPasswordForm = document.getElementById('forgot-password-form');
 
+  // Add event listeners for guest options
+  const browseItemsBtn = document.getElementById('browse-items');
+  const shopAsGuestBtn = document.getElementById('shop-as-guest');
+
+  if (browseItemsBtn) {
+    browseItemsBtn.addEventListener('click', () => {
+      window.location.href = 'order.html';
+    });
+  }
+
+  if (shopAsGuestBtn) {
+    shopAsGuestBtn.addEventListener('click', () => {
+      window.location.href = 'order.html';
+    });
+  }
+
   // Toggle links
   const registerLink = document.getElementById('register-link');
   const forgotPasswordLink = document.getElementById('forgot-password-link');

@@ -78,11 +78,11 @@ header {
 }
 
 #register-form {
-    display: block;
+    display: none;
 }
 
 #login-form {
-    display: none;
+    display: block;
 }
 
 #forgot-password-form {
@@ -168,7 +168,7 @@ header {
 }
 
 .form-links {
-    margin-top: 20px;
+    margin-top: 15px;
     text-align: center;
 }
 
@@ -236,6 +236,56 @@ footer {
 
 .social-links a:hover {
     color: #3498db;
+}
+
+.guest-options {
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.guest-btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #f8f9fa;
+    color: #2c3e50;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.guest-btn:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+}
+
+.guest-btn i {
+    font-size: 1.1rem;
+}
+
+#browse-items {
+    background-color: #e3f2fd;
+    color: #1976d2;
+}
+
+#browse-items:hover {
+    background-color: #bbdefb;
+}
+
+#shop-as-guest {
+    background-color: #f3e5f5;
+    color: #7b1fa2;
+}
+
+#shop-as-guest:hover {
+    background-color: #e1bee7;
 }
 
 /* Responsive Design */

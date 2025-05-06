@@ -5,13 +5,18 @@ services:
     nodeVersion: 18.17.0
     rootDir: api-gateway
     buildCommand: cd api-gateway && npm install --production
-    startCommand: cd api-gateway && npm start
+    startCommand: cd api-gateway && node server.js
     healthCheckPath: /
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
         value: production
       - key: PRODUCT_SERVICE_URL
         value: https://grocery-product-service.onrender.com
+      - key: PORT
+        value: 10000
+      - key: RENDER_API_KEY
+        value: rnd_rE9oKkDPLivPeMaTF0zI8XlFmTar
 
   - type: web
     name: grocery-product-service
@@ -19,8 +24,13 @@ services:
     nodeVersion: 18.17.0
     rootDir: productService
     buildCommand: cd productService && npm install --production
-    startCommand: cd productService && npm start
+    startCommand: cd productService && node server.js
     healthCheckPath: /health
+    autoDeploy: true
     envVars:
       - key: NODE_ENV
-        value: production 
+        value: production
+      - key: PORT
+        value: 10001
+      - key: RENDER_API_KEY
+        value: rnd_rE9oKkDPLivPeMaTF0zI8XlFmTar 

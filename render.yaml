@@ -6,7 +6,7 @@ services:
     buildCommand: |
       cd api-gateway
       npm install
-    startCommand: cd api-gateway && npm start
+    startCommand: cd api-gateway && node server.js
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
@@ -21,7 +21,7 @@ services:
     buildCommand: |
       cd productService
       npm install
-    startCommand: cd productService && npm start
+    startCommand: cd productService && node server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

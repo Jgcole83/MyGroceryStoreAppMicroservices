@@ -5,8 +5,11 @@ services:
     nodeVersion: 18.17.0
     buildCommand: |
       cd api-gateway
+      npm install express cors http-proxy-middleware
       npm install
-    startCommand: cd api-gateway && node server.js
+    startCommand: |
+      cd api-gateway
+      node server.js
     healthCheckPath: /
     envVars:
       - key: NODE_ENV
@@ -20,8 +23,11 @@ services:
     nodeVersion: 18.17.0
     buildCommand: |
       cd productService
+      npm install express cors morgan
       npm install
-    startCommand: cd productService && node server.js
+    startCommand: |
+      cd productService
+      node server.js
     healthCheckPath: /health
     envVars:
       - key: NODE_ENV

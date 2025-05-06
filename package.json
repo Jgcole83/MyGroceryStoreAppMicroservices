@@ -5,8 +5,8 @@
   "description": "Grocery Store Microservices",
   "scripts": {
     "start": "concurrently \"npm run start:product\" \"npm run start:gateway\"",
-    "start:product": "cd productService && npm start",
-    "start:gateway": "cd api-gateway && npm start"
+    "start:product": "cd productService && node server.js",
+    "start:gateway": "cd api-gateway && node server.js"
   },
   "dependencies": {
     "concurrently": "^8.2.2"

@@ -1,143 +1,182 @@
-# Jessy's Grocery Outlet
+# Jessy's Grocery Outlet - Full Stack E-commerce Application
 
-A modern, full-stack grocery shopping application built with Node.js, Express, and vanilla JavaScript.
-
-![Project Screenshot](screenshots/login.png)
+A modern, full-stack e-commerce application for a grocery store, built with Node.js, Express, and vanilla JavaScript. This project demonstrates a microservices architecture with an API Gateway, Authentication Service, Product Service, and Order Service.
 
 ## Features
 
-- **User Authentication**
-  - Secure registration and login
-  - JWT-based authentication
-  - Password hashing with bcrypt
-  - Protected routes
-
-- **Shopping Experience**
+- 🛍️ **Product Catalog**
   - Browse products by category
-  - Add items to cart
-  - Real-time price calculation
-  - Secure checkout process
+  - Search functionality
+  - Price filtering
+  - Sort by name or price
+  - Product details and stock information
 
-- **User Interface**
-  - Modern, responsive design
-  - Intuitive navigation
-  - Real-time feedback
-  - Mobile-friendly layout
+- 👤 **User Authentication**
+  - User registration
+  - Login/Logout
+  - Guest checkout option
+  - Secure password handling
+
+- 🛒 **Shopping Cart**
+  - Add/remove items
+  - Real-time cart updates
+  - Cart persistence
+  - Order total calculation
+
+- 📦 **Order Management**
+  - Place orders
+  - Guest checkout
+  - Order history
+  - Order status tracking
 
 ## Tech Stack
 
-- **Frontend**
-  - HTML5
-  - CSS3 (with modern features)
-  - Vanilla JavaScript (ES6+)
-  - Font Awesome icons
-  - Google Fonts
+- **Frontend**: HTML5, CSS3, JavaScript (Vanilla)
+- **Backend**: Node.js, Express
+- **Services**:
+  - API Gateway
+  - Authentication Service
+  - Product Service
+  - Order Service
+- **Data Storage**: In-memory JSON storage (for demo purposes)
 
-- **Backend**
-  - Node.js
-  - Express.js
-  - JWT Authentication
-  - bcrypt for password hashing
-  - CORS support
-
-## Getting Started
-
-### Prerequisites
+## Prerequisites
 
 - Node.js (v14 or higher)
 - npm (v6 or higher)
+- Git
 
-### Installation
+## Installation
 
 1. Clone the repository:
-```bash
-git clone https://github.com/Jgcole83/MyGroceryStoreAppMicroservices.git
-cd MyGroceryStoreAppMicroservices
-```
+   ```bash
+   git clone https://github.com/yourusername/grocery-store.git
+   cd grocery-store
+   ```
 
-2. Install dependencies:
-```bash
-npm install
-```
+2. Install dependencies for each service:
+   ```bash
+   # Install API Gateway dependencies
+   cd api-gateway
+   npm install
 
-3. Create a `.env` file in the root directory:
-```env
-JWT_SECRET=your-secret-key
-PORT=5500
-```
+   # Install Authentication Service dependencies
+   cd ../authService
+   npm install
 
-4. Start the development server:
-```bash
-npm run dev
-```
+   # Install Product Service dependencies
+   cd ../productService
+   npm install
+
+   # Install Order Service dependencies
+   cd ../orderService
+   npm install
+   ```
+
+## Running the Application
+
+1. Start the Authentication Service:
+   ```bash
+   cd authService
+   npm start
+   ```
+
+2. Start the Product Service:
+   ```bash
+   cd productService
+   npm start
+   ```
+
+3. Start the Order Service:
+   ```bash
+   cd orderService
+   npm start
+   ```
+
+4. Start the API Gateway:
+   ```bash
+   cd api-gateway
+   npm start
+   ```
 
 5. Open your browser and navigate to:
-```
-http://localhost:5500
-```
+   ```
+   http://localhost:5500
+   ```
+
+## Service Ports
+
+- API Gateway: `http://localhost:5500`
+- Authentication Service: `http://localhost:3001`
+- Product Service: `http://localhost:5003`
+- Order Service: `http://localhost:5002`
 
 ## Project Structure
 
 ```
-grocery-outlet/
-├── public/
-│   ├── css/
-│   │   └── design.css
-│   ├── js/
-│   │   └── app.js
-│   ├── login.html
-│   └── order.html
-├── server.js
-├── package.json
-├── .env
+grocery-store/
+├── api-gateway/          # API Gateway service
+├── authService/          # Authentication service
+├── productService/       # Product service
+├── orderService/         # Order service
 └── README.md
 ```
 
-## Security Features
+## Features in Detail
 
-- Password hashing with bcrypt
-- JWT-based authentication
-- CORS protection
-- Input validation
-- Error handling
-- Secure session management
+### Product Catalog
+- Browse products organized by categories (Dairy, Produce, Meat, etc.)
+- Search products by name or description
+- Filter products by price range
+- Sort products by name or price
+- View product details including price and stock information
 
-## API Endpoints
+### User Authentication
+- Secure user registration with email and password
+- Login functionality with JWT token authentication
+- Guest checkout option for quick purchases
+- Password reset functionality
 
-- `POST /register` - User registration
-- `POST /login` - User authentication
-- `GET /protected` - Protected route example
-- `GET /products` - Get all products
-- `POST /cart` - Add to cart
-- `GET /cart` - Get cart items
+### Shopping Experience
+- Add products to cart
+- Update quantities
+- Remove items from cart
+- View cart total
+- Real-time cart updates
+
+### Order Processing
+- Place orders as registered user or guest
+- View order history
+- Track order status
+- Receive order confirmation
+
+## Development Notes
+
+- The application uses in-memory storage for demonstration purposes
+- All services are designed to be easily modified to use a real database
+- The API Gateway handles routing and authentication
+- Services communicate through HTTP requests
+- Error handling and logging are implemented throughout
 
 ## Future Improvements
 
-- [ ] Database integration (MongoDB/PostgreSQL)
-- [ ] User profile management
-- [ ] Order history
-- [ ] Product reviews and ratings
-- [ ] Payment gateway integration
-- [ ] Admin dashboard
-- [ ] Email notifications
-- [ ] Search functionality
-- [ ] Product filtering
-- [ ] Unit tests
+- [ ] Add a real database (MongoDB/PostgreSQL)
+- [ ] Implement payment processing
+- [ ] Add user profile management
+- [ ] Implement product reviews and ratings
+- [ ] Add admin dashboard
+- [ ] Implement real-time notifications
+- [ ] Add product images
+- [ ] Implement wishlist functionality
 
 ## Contributing
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
+Feel free to fork this repository and submit pull requests for any improvements.
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ## Contact
 
-Jessy Cole - jgcole83@gmail.com
-
-Project Link: [https://github.com/Jgcole83/MyGroceryStoreAppMicroservices](https://github.com/Jgcole83/MyGroceryStoreAppMicroservices)
+For any questions or suggestions, please reach out to [your-email@example.com]

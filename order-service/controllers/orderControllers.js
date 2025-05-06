@@ -6,7 +6,9 @@ let orders = [];
 // Controller: Place Order
 export function placeOrder(req, res) {
   try {
-    const { userId, shoppingList, budget } = req.body;
+    // Accept both 'shoppingList' (user) and 'items' (guest)
+    const shoppingList = req.body.shoppingList || req.body.items;
+    const { userId, name, email, address, city, state, phone } = req.body;
 
     if (!Array.isArray(shoppingList) || shoppingList.length === 0) {
       return res.status(400).json({ error: "Shopping list is required and must be an array." });
@@ -20,13 +22,24 @@ export function placeOrder(req, res) {
 
     const total = calculateTotal(shoppingList);
 
-    if (!isOrderAffordable(total, budget)) {
-      return res.status(400).json({ error: "You do not have enough funds for this order" });
+    let order;
+    if (userId) {
+      // User order (optionally check budget if needed)
+      order = { userId, shoppingList, total, createdAt: new Date(), type: 'user' };
+    } else {
+      // Guest order
+      if (!name || !email || !address || !city || !state || !phone) {
+        return res.status(400).json({ error: "Guest info required for guest checkout." });
+      }
+      order = {
+        guest: { name, email, address, city, state, phone },
+        shoppingList,
+        total,
+        createdAt: new Date(),
+        type: 'guest'
+      };
     }
-
-    const order = { userId, shoppingList, total };
     orders.push(order);
-
     return res.status(200).json({ message: "Order placed successfully", order });
   } catch (error) {
     console.error(error);

@@ -4,12 +4,20 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import { Pool } from 'pg';
 import jwt from 'jsonwebtoken';  // Importing JWT for token signing/verification
+import cors from 'cors';
 
 const app = express();
 
 // Set port using environment variable or default to 5000
-const port = process.env.PORT || 5000;
+const port = process.env.AUTH_PORT || 3001;
 
+// Middleware
+app.use(cors({
+    origin: ['http://localhost:5500', 'http://127.0.0.1:5500'],
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+}));
 app.use(express.json());
 
 // PostgreSQL connection using environment variables for DATABASE_URL
@@ -19,29 +27,42 @@ const pool = new Pool({
 
 // Register (Sign up)
 app.post('/auth/register', async (req, res) => {
-  const { username, password, email } = req.body;
+  const { name, email, password, address, city, state, phone } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      'INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING id, username, email',
-      [username, hashedPassword, email]
+      'INSERT INTO users (username, password, email, address, city, state, phone) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, username, email',
+      [name, hashedPassword, email, address, city, state, phone]
     );
 
-    res.status(201).json({ message: 'User registered successfully!', user: result.rows[0] });
+    const user = result.rows[0];
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET_KEY || 'default_secret_key', {
+      expiresIn: '1h',
+    });
+
+    res.status(201).json({ 
+      message: 'User registered successfully!', 
+      token,
+      user: {
+        id: user.id,
+        name: user.username,
+        email: user.email
+      }
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Registration error:', err);
     res.status(500).json({ error: 'Registration failed' });
   }
 });
 
 // Login (Sign in)
 app.post('/auth/login', async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const result = await pool.query('SELECT * FROM users WHERE username = $1', [username]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
     if (result.rows.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
@@ -58,9 +79,17 @@ app.post('/auth/login', async (req, res) => {
       expiresIn: '1h',  // Set expiration for 1 hour
     });
 
-    res.json({ token });
+    res.json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user.id,
+        name: user.username,
+        email: user.email
+      }
+    });
   } catch (err) {
-    console.error(err);
+    console.error('Login error:', err);
     res.status(500).json({ error: 'Login failed' });
   }
 });
@@ -113,5 +142,5 @@ app.get('/health', (req, res) => {
 
 // Start the server on the specified port
 app.listen(port, () => {
-  console.log(`Auth service running on port ${port}`);
+  console.log(`Authentication Service running on http://localhost:${port}`);
 });

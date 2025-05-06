@@ -1,134 +1,128 @@
 # Jessy's Grocery Outlet
 
-A modern, full-stack e-commerce application for grocery shopping with a focus on user experience and efficient data management.
+A modern, full-stack grocery shopping application built with Node.js, Express, and vanilla JavaScript.
 
-![Project Screenshot](screenshots/main.png)
+![Project Screenshot](screenshots/login.png)
 
 ## Features
 
-### User Authentication
-- Secure JWT-based authentication
-- User registration and login
-- Protected routes
-- Session management
+- **User Authentication**
+  - Secure registration and login
+  - JWT-based authentication
+  - Password hashing with bcrypt
+  - Protected routes
 
-### Shopping Experience
-- Doubly linked list implementation for cart management
-- Real-time search functionality
-- Advanced filtering options
-- Category-based product organization
-- Responsive design for all devices
+- **Shopping Experience**
+  - Browse products by category
+  - Add items to cart
+  - Real-time price calculation
+  - Secure checkout process
 
-### Technical Features
-- Modern UI with CSS variables
-- Smooth animations and transitions
-- Efficient data structures
-- Clean, modular code structure
-- Error handling and user feedback
+- **User Interface**
+  - Modern, responsive design
+  - Intuitive navigation
+  - Real-time feedback
+  - Mobile-friendly layout
 
 ## Tech Stack
 
-### Frontend
-- HTML5
-- CSS3 (with CSS Variables)
-- Vanilla JavaScript
-- Font Awesome Icons
-- Google Fonts (Poppins)
+- **Frontend**
+  - HTML5
+  - CSS3 (with modern features)
+  - Vanilla JavaScript (ES6+)
+  - Font Awesome icons
+  - Google Fonts
 
-### Backend
-- Node.js
-- Express
-- MongoDB
-- JWT Authentication
-
-## Project Structure
-
-```
-Jessy's-Grocery-Outlet/
-├── public/
-│   ├── css/
-│   │   ├── design.css
-│   │   └── order.css
-│   ├── js/
-│   │   └── app.js
-│   └── images/
-├── views/
-│   ├── login.html
-│   └── order.html
-├── app.js
-├── package.json
-└── README.md
-```
+- **Backend**
+  - Node.js
+  - Express.js
+  - JWT Authentication
+  - bcrypt for password hashing
+  - CORS support
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js (v14 or higher)
-- MongoDB
-- Modern web browser
+- npm (v6 or higher)
 
 ### Installation
 
-1. Clone the repository
+1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/Jessy-s-Grocery-Outlet.git
-cd Jessy-s-Grocery-Outlet
+git clone https://github.com/Jgcole83/MyGroceryStoreAppMicroservices.git
+cd MyGroceryStoreAppMicroservices
 ```
 
-2. Install dependencies
+2. Install dependencies:
 ```bash
 npm install
 ```
 
-3. Configure environment variables
-Create a `.env` file in the root directory:
-```
-PORT=5003
-MONGODB_URI=your_mongodb_uri
-JWT_SECRET=your_jwt_secret
+3. Create a `.env` file in the root directory:
+```env
+JWT_SECRET=your-secret-key
+PORT=5500
 ```
 
-4. Start the server
+4. Start the development server:
 ```bash
-node app.js
+npm run dev
 ```
 
-5. Access the application
-Open your browser and navigate to:
+5. Open your browser and navigate to:
 ```
-http://localhost:5003
+http://localhost:5500
 ```
 
-## Key Features in Detail
+## Project Structure
 
-### Shopping Cart Implementation
-The shopping cart uses a doubly linked list data structure for efficient item management:
-- O(1) insertion and deletion
-- Memory efficient
-- Easy traversal in both directions
-- Maintains order history
+```
+grocery-outlet/
+├── public/
+│   ├── css/
+│   │   └── design.css
+│   ├── js/
+│   │   └── app.js
+│   ├── login.html
+│   └── order.html
+├── server.js
+├── package.json
+├── .env
+└── README.md
+```
 
-### Search and Filtering
-- Real-time search across product names and descriptions
-- Category-based filtering
-- Price range filtering
-- Multiple sorting options (name, price)
+## Security Features
 
-### Responsive Design
-- Mobile-first approach
-- Flexible grid layouts
-- Adaptive typography
-- Touch-friendly interactions
+- Password hashing with bcrypt
+- JWT-based authentication
+- CORS protection
+- Input validation
+- Error handling
+- Secure session management
+
+## API Endpoints
+
+- `POST /register` - User registration
+- `POST /login` - User authentication
+- `GET /protected` - Protected route example
+- `GET /products` - Get all products
+- `POST /cart` - Add to cart
+- `GET /cart` - Get cart items
 
 ## Future Improvements
 
+- [ ] Database integration (MongoDB/PostgreSQL)
 - [ ] User profile management
-- [ ] Product reviews and ratings
 - [ ] Order history
-- [ ] Payment integration
+- [ ] Product reviews and ratings
+- [ ] Payment gateway integration
 - [ ] Admin dashboard
 - [ ] Email notifications
-- [ ] Wishlist functionality
+- [ ] Search functionality
+- [ ] Product filtering
+- [ ] Unit tests
 
 ## Contributing
 
@@ -142,14 +136,8 @@ The shopping cart uses a doubly linked list data structure for efficient item ma
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## Acknowledgments
-
-- Font Awesome for icons
-- Google Fonts for typography
-- Unsplash for stock images
-
 ## Contact
 
 Jessy Cole - jgcole83@gmail.com
 
-Project Link: [https://github.com/jgcole83/Jessy-s-Grocery-Outlet](https://github.com/jgcole83/Jessy-s-Grocery-Outlet)
+Project Link: [https://github.com/Jgcole83/MyGroceryStoreAppMicroservices](https://github.com/Jgcole83/MyGroceryStoreAppMicroservices)

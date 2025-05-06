@@ -12,13 +12,16 @@ router.get('/grocery-items', async (req, res) => {
             }
             acc[product.category].push({
                 id: product._id,
-                item: product.name,
-                price: product.price
+                name: product.name,
+                price: product.price,
+                description: product.description,
+                stock: product.stock
             });
             return acc;
         }, {});
         res.status(200).json(groupedProducts);
     } catch (error) {
+        console.error('Error fetching grocery items:', error);
         res.status(500).json({ error: error.message });
     }
 });

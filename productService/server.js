@@ -9,7 +9,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const port = 3001;
+const port = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
@@ -136,7 +136,7 @@ app.use((req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Product Service running on http://localhost:${port}`);
+    console.log(`Product Service running on port ${port}`);
     console.log('Using in-memory storage with default products');
     console.log('Health check available at /health');
 });

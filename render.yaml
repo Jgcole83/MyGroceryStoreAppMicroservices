@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: grocery-api-gateway
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PRODUCT_SERVICE_URL
+        value: https://grocery-product-service.onrender.com
+
+  - type: web
+    name: grocery-product-service
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production 

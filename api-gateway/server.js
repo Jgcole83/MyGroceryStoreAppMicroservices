@@ -8,7 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 const app = express();
-const port = 3000;
+const port = process.env.PORT || 3000;
 
 // CORS configuration
 app.use(cors());
@@ -19,7 +19,7 @@ app.use(express.static(join(__dirname, 'public')));
 
 // Proxy configuration for product service
 const productServiceProxy = createProxyMiddleware({
-  target: 'http://localhost:3001',
+  target: process.env.PRODUCT_SERVICE_URL || 'http://localhost:3001',
   changeOrigin: true,
   pathRewrite: {
     '^/api/grocery-items': '/api/grocery-items'
@@ -38,5 +38,5 @@ app.get('/order', (req, res) => {
 });
 
 app.listen(port, () => {
-  console.log(`API Gateway running on http://localhost:${port}`);
+  console.log(`API Gateway running on port ${port}`);
 });

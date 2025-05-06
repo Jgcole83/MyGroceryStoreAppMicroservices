@@ -253,11 +253,7 @@
         };
 
         // Add to cart function
-        function addToCart(productId) {
-            const productCard = document.querySelector(`[onclick="addToCart('${productId}')"]`).closest('.product-card');
-            const name = productCard.querySelector('h3').textContent;
-            const price = parseFloat(productCard.querySelector('.price').textContent.replace('$', ''));
-            
+        function addToCart(productId, name, price) {
             cart.addItem(productId, name, price);
             
             // Show cart dropdown
@@ -301,77 +297,53 @@
         // Load products
         async function loadProducts() {
             try {
-                const controller = new AbortController();
-                const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-                const response = await fetch('http://localhost:5500/api/grocery-items', {
-                    signal: controller.signal
-                });
-                clearTimeout(timeoutId);
-
+                const response = await fetch('http://localhost:3000/api/grocery-items');
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error('Failed to load products');
                 }
-                const result = await response.json();
+                const data = await response.json();
                 
-                if (!result.success) {
-                    throw new Error(result.message || 'Failed to load products');
-                }
-
-                const products = result.data;
-                const productList = document.getElementById('grocery-items');
-                if (productList) {
-                    // Organize products by category
-                    const categories = {
-                        'Dairy': products.Dairy || [],
-                        'Produce': products.Produce || [],
-                        'Meat': products.Meat || [],
-                        'Dry Goods': products['Dry Goods'] || [],
-                        'Bakery': products.Bakery || [],
-                        'Beverages': products.Beverages || [],
-                        'Snacks': products.Snacks || []
-                    };
-
-                    // Display products by category
-                    productList.innerHTML = Object.entries(categories)
-                        .filter(([_, items]) => items.length > 0) // Only show categories with items
-                        .map(([category, items]) => `
-                            <div class="category">
-                                <h2>${category}</h2>
-                                <div class="items">
-                                    ${items.map(item => `
-                                        <div class="product-card">
-                                            <h3>${item.name}</h3>
-                                            <p class="description">${item.description}</p>
-                                            <p class="price">$${item.price.toFixed(2)}</p>
-                                            <p class="stock">${item.stock} in stock</p>
-                                            <button onclick="addToCart('${item.id}')" class="add-to-cart">
-                                                <i class="fas fa-cart-plus"></i>
+                if (data.success && data.data) {
+                    const groceryItemsContainer = document.getElementById('grocery-items');
+                    groceryItemsContainer.innerHTML = ''; // Clear existing content
+                    
+                    // Create category sections for each category in data.data
+                    for (const [category, products] of Object.entries(data.data)) {
+                        const categorySection = document.createElement('div');
+                        categorySection.className = 'category-section';
+                        categorySection.innerHTML = `
+                            <h2 class="category-title">${category}</h2>
+                            <div class="product-grid">
+                                ${products.map(product => `
+                                    <div class="product-card">
+                                        <div class="product-info">
+                                            <h3>${product.name}</h3>
+                                            <p class="price">$${product.price.toFixed(2)}</p>
+                                            <p class="description">${product.description}</p>
+                                        </div>
+                                        <div class="product-actions">
+                                            <button class="add-to-cart" onclick="addToCart('${product.id}', '${product.name}', ${product.price})">
                                                 Add to Cart
                                             </button>
                                         </div>
-                                    `).join('')}
-                                </div>
+                                    </div>
+                                `).join('')}
                             </div>
-                        `).join('');
+                        `;
+                        groceryItemsContainer.appendChild(categorySection);
+                    }
+                } else {
+                    throw new Error('Invalid data format received');
                 }
             } catch (error) {
                 console.error('Error loading products:', error);
-                const productList = document.getElementById('grocery-items');
-                if (productList) {
-                    productList.innerHTML = `
-                        <div class="error">
-                            <h3>Welcome to Jessy's Grocery Outlet!</h3>
-                            <p>We're currently experiencing some technical difficulties.</p>
-                            <p>Please try refreshing the page or come back later.</p>
-                            <p>If the problem persists, please contact support.</p>
-                            <button onclick="loadProducts()" class="retry-button">
-                                <i class="fas fa-sync-alt"></i>
-                                Retry
-                            </button>
-                        </div>
-                    `;
-                }
+                const groceryItemsContainer = document.getElementById('grocery-items');
+                groceryItemsContainer.innerHTML = `
+                    <div class="error-message">
+                        <p>Failed to load products. Please try again later.</p>
+                        <button onclick="loadProducts()">Retry</button>
+                    </div>
+                `;
             }
         }
 
@@ -384,7 +356,7 @@
         // Function to filter and sort products
         async function filterProducts() {
             try {
-                const response = await fetch('http://localhost:5500/api/grocery-items');
+                const response = await fetch('http://localhost:3000/api/grocery-items');
                 if (!response.ok) throw new Error('Failed to fetch products');
                 
                 const result = await response.json();
@@ -398,18 +370,20 @@
 
                 // Flatten all products into a single array
                 let allProducts = [];
-                Object.values(products).forEach(category => {
-                    allProducts = allProducts.concat(category);
+                Object.entries(products).forEach(([category, items]) => {
+                    items.forEach(item => {
+                        allProducts.push({
+                            ...item,
+                            category: category
+                        });
+                    });
                 });
 
                 // Apply filters
                 let filteredProducts = allProducts.filter(product => {
                     // Category filter
-                    if (categoryFilter !== 'all') {
-                        const productCategory = Object.keys(products).find(cat => 
-                            products[cat].some(p => p.id === product.id)
-                        );
-                        if (productCategory !== categoryFilter) return false;
+                    if (categoryFilter !== 'all' && product.category !== categoryFilter) {
+                        return false;
                     }
 
                     // Price filter
@@ -451,11 +425,8 @@
 
                 // Group filtered products by category
                 const groupedProducts = filteredProducts.reduce((acc, product) => {
-                    const category = Object.keys(products).find(cat => 
-                        products[cat].some(p => p.id === product.id)
-                    );
-                    if (!acc[category]) acc[category] = [];
-                    acc[category].push(product);
+                    if (!acc[product.category]) acc[product.category] = [];
+                    acc[product.category].push(product);
                     return acc;
                 }, {});
 
@@ -465,19 +436,21 @@
                     productList.innerHTML = Object.entries(groupedProducts)
                         .filter(([_, items]) => items.length > 0)
                         .map(([category, items]) => `
-                            <div class="category">
-                                <h2>${category}</h2>
-                                <div class="items">
+                            <div class="category-section">
+                                <h2 class="category-title">${category}</h2>
+                                <div class="product-grid">
                                     ${items.map(item => `
                                         <div class="product-card">
-                                            <h3>${item.name}</h3>
-                                            <p class="description">${item.description}</p>
-                                            <p class="price">$${item.price.toFixed(2)}</p>
-                                            <p class="stock">${item.stock} in stock</p>
-                                            <button onclick="addToCart('${item.id}')" class="add-to-cart">
-                                                <i class="fas fa-cart-plus"></i>
-                                                Add to Cart
-                                            </button>
+                                            <div class="product-info">
+                                                <h3>${item.name}</h3>
+                                                <p class="price">$${item.price.toFixed(2)}</p>
+                                                <p class="description">${item.description}</p>
+                                            </div>
+                                            <div class="product-actions">
+                                                <button class="add-to-cart" onclick="addToCart('${item.id}', '${item.name}', ${item.price})">
+                                                    Add to Cart
+                                                </button>
+                                            </div>
                                         </div>
                                     `).join('')}
                                 </div>

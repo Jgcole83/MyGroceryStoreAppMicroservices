@@ -1,277 +1,425 @@
 // root/server.js
 import express from 'express';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import cors from 'cors';
-import bodyParser from 'body-parser';
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcryptjs';
-import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-// Load environment variables
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const app = express();
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const port = 3000;
 
-// Middleware
-app.use(cors({
-    origin: ['http://localhost:3000', 'http://127.0.0.1:5500'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-}));
-app.use(bodyParser.json());
+// Basic CORS configuration
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Content-Type');
+  next();
+});
+
+app.use(express.json());
 app.use(express.static(__dirname));
 
-// JWT Secret from environment variable
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-
-// In-memory storage (replace with database in production)
-const users = [];
+// Products data
 const products = [
+  // Dairy Products
   {
     id: '1',
-    name: 'Fresh Apples',
-    price: 2.99,
-    category: 'Fruits',
-    image: 'https://via.placeholder.com/150',
-    description: 'Fresh, crisp apples from local farms'
+    name: 'Fresh Milk',
+    price: 3.99,
+    category: 'Dairy',
+    description: 'Fresh whole milk from local farms'
   },
   {
     id: '2',
-    name: 'Organic Milk',
+    name: 'Cheddar Cheese',
+    price: 4.99,
+    category: 'Dairy',
+    description: 'Sharp cheddar cheese, aged 6 months'
+  },
+  {
+    id: '3',
+    name: 'Greek Yogurt',
+    price: 2.99,
+    category: 'Dairy',
+    description: 'Creamy Greek yogurt, high in protein'
+  },
+  {
+    id: '4',
+    name: 'Butter',
     price: 3.49,
     category: 'Dairy',
-    image: 'https://via.placeholder.com/150',
-    description: 'Organic whole milk, 1 gallon'
+    description: 'Premium unsalted butter'
   },
-  // Add more products as needed
+  {
+    id: '5',
+    name: 'Sour Cream',
+    price: 2.49,
+    category: 'Dairy',
+    description: 'Rich and creamy sour cream'
+  },
+  {
+    id: '6',
+    name: 'Cottage Cheese',
+    price: 2.99,
+    category: 'Dairy',
+    description: 'Low-fat cottage cheese'
+  },
+  {
+    id: '7',
+    name: 'Heavy Cream',
+    price: 3.99,
+    category: 'Dairy',
+    description: 'Pure heavy whipping cream'
+  },
+
+  // Produce
+  {
+    id: '8',
+    name: 'Red Apples',
+    price: 1.99,
+    category: 'Produce',
+    description: 'Fresh red delicious apples'
+  },
+  {
+    id: '9',
+    name: 'Bananas',
+    price: 0.99,
+    category: 'Produce',
+    description: 'Ripe bananas, perfect for snacking'
+  },
+  {
+    id: '10',
+    name: 'Fresh Spinach',
+    price: 2.49,
+    category: 'Produce',
+    description: 'Organic baby spinach leaves'
+  },
+  {
+    id: '11',
+    name: 'Tomatoes',
+    price: 2.99,
+    category: 'Produce',
+    description: 'Vine-ripened tomatoes'
+  },
+  {
+    id: '12',
+    name: 'Carrots',
+    price: 1.49,
+    category: 'Produce',
+    description: 'Fresh whole carrots'
+  },
+  {
+    id: '13',
+    name: 'Broccoli',
+    price: 2.29,
+    category: 'Produce',
+    description: 'Fresh broccoli crowns'
+  },
+  {
+    id: '14',
+    name: 'Bell Peppers',
+    price: 1.99,
+    category: 'Produce',
+    description: 'Mixed color bell peppers'
+  },
+
+  // Meat
+  {
+    id: '15',
+    name: 'Chicken Breast',
+    price: 5.99,
+    category: 'Meat',
+    description: 'Fresh boneless chicken breast'
+  },
+  {
+    id: '16',
+    name: 'Ground Beef',
+    price: 7.99,
+    category: 'Meat',
+    description: 'Premium ground beef, 80/20'
+  },
+  {
+    id: '17',
+    name: 'Pork Chops',
+    price: 6.99,
+    category: 'Meat',
+    description: 'Center-cut pork chops'
+  },
+  {
+    id: '18',
+    name: 'Salmon Fillet',
+    price: 9.99,
+    category: 'Meat',
+    description: 'Fresh Atlantic salmon fillet'
+  },
+  {
+    id: '19',
+    name: 'Turkey Breast',
+    price: 4.99,
+    category: 'Meat',
+    description: 'Boneless turkey breast'
+  },
+  {
+    id: '20',
+    name: 'Lamb Chops',
+    price: 12.99,
+    category: 'Meat',
+    description: 'Premium lamb chops'
+  },
+  {
+    id: '21',
+    name: 'Bacon',
+    price: 5.49,
+    category: 'Meat',
+    description: 'Thick-cut smoked bacon'
+  },
+
+  // Dry Goods
+  {
+    id: '22',
+    name: 'Pasta',
+    price: 2.99,
+    category: 'Dry Goods',
+    description: 'Italian pasta, perfect for any sauce'
+  },
+  {
+    id: '23',
+    name: 'White Rice',
+    price: 3.99,
+    category: 'Dry Goods',
+    description: 'Long grain white rice, 5lb bag'
+  },
+  {
+    id: '24',
+    name: 'Quinoa',
+    price: 4.99,
+    category: 'Dry Goods',
+    description: 'Organic white quinoa'
+  },
+  {
+    id: '25',
+    name: 'Oatmeal',
+    price: 3.49,
+    category: 'Dry Goods',
+    description: 'Steel-cut oats'
+  },
+  {
+    id: '26',
+    name: 'Flour',
+    price: 2.99,
+    category: 'Dry Goods',
+    description: 'All-purpose flour, 5lb bag'
+  },
+  {
+    id: '27',
+    name: 'Sugar',
+    price: 2.49,
+    category: 'Dry Goods',
+    description: 'Granulated white sugar'
+  },
+  {
+    id: '28',
+    name: 'Cereal',
+    price: 3.99,
+    category: 'Dry Goods',
+    description: 'Whole grain breakfast cereal'
+  },
+
+  // Bakery
+  {
+    id: '29',
+    name: 'Whole Wheat Bread',
+    price: 2.99,
+    category: 'Bakery',
+    description: 'Fresh whole wheat bread'
+  },
+  {
+    id: '30',
+    name: 'Croissants',
+    price: 3.49,
+    category: 'Bakery',
+    description: 'Buttery, flaky croissants'
+  },
+  {
+    id: '31',
+    name: 'Bagels',
+    price: 3.99,
+    category: 'Bakery',
+    description: 'Fresh-baked assorted bagels'
+  },
+  {
+    id: '32',
+    name: 'Sourdough Bread',
+    price: 4.49,
+    category: 'Bakery',
+    description: 'Artisan sourdough loaf'
+  },
+  {
+    id: '33',
+    name: 'Muffins',
+    price: 2.99,
+    category: 'Bakery',
+    description: 'Fresh-baked blueberry muffins'
+  },
+  {
+    id: '34',
+    name: 'Dinner Rolls',
+    price: 2.49,
+    category: 'Bakery',
+    description: 'Soft dinner rolls, pack of 8'
+  },
+  {
+    id: '35',
+    name: 'Cinnamon Bread',
+    price: 3.99,
+    category: 'Bakery',
+    description: 'Sweet cinnamon swirl bread'
+  },
+
+  // Beverages
+  {
+    id: '36',
+    name: 'Orange Juice',
+    price: 3.99,
+    category: 'Beverages',
+    description: 'Fresh squeezed orange juice'
+  },
+  {
+    id: '37',
+    name: 'Coffee',
+    price: 7.99,
+    category: 'Beverages',
+    description: 'Premium ground coffee'
+  },
+  {
+    id: '38',
+    name: 'Green Tea',
+    price: 4.99,
+    category: 'Beverages',
+    description: 'Organic green tea bags'
+  },
+  {
+    id: '39',
+    name: 'Sparkling Water',
+    price: 1.99,
+    category: 'Beverages',
+    description: 'Natural sparkling mineral water'
+  },
+  {
+    id: '40',
+    name: 'Almond Milk',
+    price: 3.49,
+    category: 'Beverages',
+    description: 'Unsweetened almond milk'
+  },
+  {
+    id: '41',
+    name: 'Sports Drink',
+    price: 2.49,
+    category: 'Beverages',
+    description: 'Electrolyte sports drink'
+  },
+  {
+    id: '42',
+    name: 'Hot Chocolate',
+    price: 3.99,
+    category: 'Beverages',
+    description: 'Rich hot chocolate mix'
+  },
+
+  // Snacks
+  {
+    id: '43',
+    name: 'Potato Chips',
+    price: 2.99,
+    category: 'Snacks',
+    description: 'Classic salted potato chips'
+  },
+  {
+    id: '44',
+    name: 'Chocolate Cookies',
+    price: 3.49,
+    category: 'Snacks',
+    description: 'Delicious chocolate chip cookies'
+  },
+  {
+    id: '45',
+    name: 'Trail Mix',
+    price: 4.99,
+    category: 'Snacks',
+    description: 'Mixed nuts and dried fruits'
+  },
+  {
+    id: '46',
+    name: 'Granola Bars',
+    price: 2.99,
+    category: 'Snacks',
+    description: 'Oat and honey granola bars'
+  },
+  {
+    id: '47',
+    name: 'Popcorn',
+    price: 1.99,
+    category: 'Snacks',
+    description: 'Microwave popcorn, pack of 3'
+  },
+  {
+    id: '48',
+    name: 'Pretzels',
+    price: 2.49,
+    category: 'Snacks',
+    description: 'Salted pretzel twists'
+  },
+  {
+    id: '49',
+    name: 'Mixed Nuts',
+    price: 5.99,
+    category: 'Snacks',
+    description: 'Premium mixed nuts'
+  }
 ];
 
-// Authentication middleware
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-
-  if (!token) {
-    return res.status(401).json({ 
-      success: false, 
-      error: 'Authentication token required' 
-    });
-  }
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) {
-      return res.status(403).json({ 
-        success: false, 
-        error: 'Invalid or expired token' 
-      });
-    }
-    req.user = user;
-    next();
-  });
-};
-
-// Serve static HTML files
+// Routes
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'login.html'));
+  res.sendFile(join(__dirname, 'login.html'));
 });
 
 app.get('/order', (req, res) => {
-  res.sendFile(path.join(__dirname, 'order.html'));
+  res.sendFile(join(__dirname, 'order.html'));
 });
 
-// Register endpoint
-app.post('/register', async (req, res) => {
+// Get grocery items
+app.get('/api/grocery-items', (req, res) => {
   try {
-    const { name, email, password, address, city, state, phone } = req.body;
-
-    // Input validation
-    if (!email || !password || !name) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Missing required fields' 
-      });
-    }
-
-    // Email format validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Invalid email format' 
-      });
-    }
-
-    // Check if user already exists
-    if (users.some(user => user.email === email)) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'User already exists' 
-      });
-    }
-
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Create new user
-    const newUser = {
-      id: Date.now().toString(),
-      name,
-      email,
-      password: hashedPassword,
-      address,
-      city,
-      state,
-      phone,
-      createdAt: new Date().toISOString()
-    };
-
-    users.push(newUser);
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: newUser.id, email: newUser.email },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
-    res.status(201).json({
-      success: true,
-      message: 'User registered successfully',
-      token,
-      userId: newUser.id,
-      user: {
-        name: newUser.name,
-        email: newUser.email
+    const groupedProducts = products.reduce((acc, product) => {
+      if (!acc[product.category]) {
+        acc[product.category] = [];
       }
-    });
-  } catch (error) {
-    console.error('Registration error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
-    });
-  }
-});
-
-// Login endpoint
-app.post('/login', async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    // Input validation
-    if (!email || !password) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Email and password are required' 
+      acc[product.category].push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        description: product.description
       });
-    }
-
-    // Find user
-    const user = users.find(u => u.email === email);
-    if (!user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid credentials' 
-      });
-    }
-
-    // Verify password
-    const validPassword = await bcrypt.compare(password, user.password);
-    if (!validPassword) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid credentials' 
-      });
-    }
-
-    // Generate JWT token
-    const token = jwt.sign(
-      { userId: user.id, email: user.email },
-      JWT_SECRET,
-      { expiresIn: '24h' }
-    );
-
+      return acc;
+    }, {});
+    
     res.json({
       success: true,
-      message: 'Login successful',
-      token,
-      userId: user.id,
-      user: {
-        name: user.name,
-        email: user.email
-      }
+      data: groupedProducts
     });
   } catch (error) {
-    console.error('Login error:', error);
+    console.error('Error fetching grocery items:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Internal server error' 
+      error: 'Failed to fetch products',
+      message: error.message 
     });
   }
 });
 
-// Get products
-app.get('/products', (req, res) => {
-  try {
-    res.json({
-      success: true,
-      products
-    });
-  } catch (error) {
-    console.error('Products error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
-    });
-  }
-});
-
-// Get product by ID
-app.get('/products/:id', (req, res) => {
-  try {
-    const product = products.find(p => p.id === req.params.id);
-    if (!product) {
-      return res.status(404).json({ 
-        success: false, 
-        error: 'Product not found' 
-      });
-    }
-    res.json({
-      success: true,
-      product
-    });
-  } catch (error) {
-    console.error('Product error:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
-    });
-  }
-});
-
-// Protected route example
-app.get('/protected', authenticateToken, (req, res) => {
-  res.json({ 
-    success: true, 
-    message: 'Protected route accessed successfully',
-    user: req.user 
-  });
-});
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ 
-    success: false, 
-    error: 'Something went wrong!' 
-  });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`Server running on http://localhost:${port}`);
 });

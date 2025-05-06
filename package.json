@@ -1,46 +1,17 @@
 {
-  "name": "groceryproject",
+  "name": "grocery-project",
   "version": "1.0.0",
-  "description": "This project is a microservices-based architecture for a Grocery Store Application. The app is designed to handle user authentication and order management through separate, loosely-coupled services.",
-  "main": "app.js",
-  "type": "commonjs",
+  "type": "module",
+  "description": "Grocery Store Microservices",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "concurrently \"npm run start:gateway\" \"npm run start:auth\" \"npm run start:order\" \"npm run start:product\"",
-    "start:gateway": "node api-gateway/server.js",
-    "start:auth": "node auth-service/server.js",
-    "start:order": "node order-service/server.js",
-    "start:product": "node productService/server.js"
+    "start:product": "cd productService && npm start",
+    "start:gateway": "cd api-gateway && npm start",
+    "start": "concurrently \"npm run start:product\" \"npm run start:gateway\""
   },
   "dependencies": {
-    "bcryptjs": "^2.4.3",
-    "body-parser": "^1.20.2",
-    "concurrently": "^9.1.2",
-    "cors": "^2.8.5",
-    "dotenv": "^16.3.1",
-    "express": "^4.18.2",
-    "http-proxy-middleware": "^3.0.5",
-    "jsonwebtoken": "^9.0.2",
-    "mongoose": "^7.0.3"
+    "concurrently": "^8.2.2"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Jgcole83/MyGroceryStoreAppMicroservices.git"
-  },
-  "keywords": [
-    "microservices",
-    "grocery",
-    "e-commerce",
-    "express",
-    "nodejs"
-  ],
-  "author": "Jessy Cole",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/Jgcole83/MyGroceryStoreAppMicroservices/issues"
-  },
-  "homepage": "https://github.com/Jgcole83/MyGroceryStoreAppMicroservices#readme"
+  "engines": {
+    "node": "18.x"
+  }
 }
